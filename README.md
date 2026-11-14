@@ -30,12 +30,12 @@ Netlify functions (netlify/functions) ── Claude API key, staff list, owner's
 | `site/index.html` | Home page + the **Live Inventory** page (opens at `/#staff`) |
 | `site/slabs.html` | Live slab catalog: search, filters, save, quote |
 | `site/quartz.html`, `granite.html`, `trade.html`, `faq.html`, `contact.html` | Content pages and the quote form |
-| `site/js/config.js` | **Your settings**: company details, Microsoft app ID, admin emails |
-| `site/js/site.js`, `catalog.js`, `home.js` | Public pages: live numbers, catalog, saved slabs, forms |
-| `site/js/portal.js` | Live Inventory page and the agent's tools |
+| `site/js/config.js` | **Your settings**: company details printed on sales orders (the app ID and emails live in Netlify) |
+| `site/js/site.js`, `catalog.js`, `home.js` | Public pages: live numbers, catalog (By stone / All slabs / Saved, Warm/Cool/Dark, minimum size), saved slabs, forms |
+| `site/js/portal.js` | Live Inventory page (lots as tiles), the pop-up "Ask the agent" chat and the agent's tools |
 | `site/js/stores.js`, `xlsxlite.js`, `stonesheet.js` | Read and write the Excel file without changing formulas or formatting |
 | `site/js/auth.js` | Microsoft sign-in for staff |
-| `site/css/site.css` | All styles (brand colors and fonts at the top) |
+| `site/css/site.css` | All styles: sage background `#E9ECE3`, white cards, pastel accents; colors and fonts in the `:root` block at the top |
 | `netlify/functions/*.mjs` | Server: agent (`/api/agent`), public stock (`/api/inventory`), editor file access (`/api/file`), who-am-I (`/api/me`), OneDrive connection (`/api/connect`) |
 | `netlify/lib/*` | Shared server code |
 | `netlify.toml` | Hosting settings and security headers |
@@ -126,11 +126,20 @@ Then set these (check each one on an existing app):
 
 Changes in Azure can take 5–10 minutes to start working.
 
-## Step 5: Claude API key
+## Step 5: Claude API key (or Claude in Microsoft Foundry)
+
+**Option A, Anthropic Console (simplest):**
 
 1. https://console.anthropic.com → **Billing**: add credit (e.g. $5). **Limits**: set a monthly limit (e.g. $20).
 2. **API Keys → Create Key**: workspace **Default workspace**, a long expiry (90 days or 1 year). Copy the key (`sk-ant-…`).
 3. The key is shown once. If you lose it, delete it and create a new one.
+
+**Option B, Microsoft Foundry (billed on your Azure subscription; needs a paid pay-as-you-go Azure subscription, not a free trial):**
+
+1. https://ai.azure.com → create a project → **Model catalog** → **Claude Haiku 4.5** → **Deploy** (deployment name `claude-haiku-4-5`, region **Global**).
+2. Copy the endpoint (`https://YOUR-RESOURCE.services.ai.azure.com/anthropic`) and the key.
+3. In step 6 use `FOUNDRY_ENDPOINT`, `FOUNDRY_API_KEY` and optional `FOUNDRY_DEPLOYMENT` instead of `ANTHROPIC_API_KEY`. If both are set, Foundry is used.
+4. Add an Azure **Cost Management → Budget** with an email alert as your spend cap.
 
 ## Step 6: Netlify environment variables
 
@@ -143,10 +152,17 @@ Netlify → your site → **Project configuration → Environment variables → 
 | `OWNER_EMAIL` | the owner's Microsoft email, e.g. `weworkforuandus@gmail.com` | |
 | `EXCEL_PATH` | `/Stone/LIVE INVENTORY.xlsx` (your path from step 1) | |
 | `ALLOWED_EMAILS` | staff who may make changes, comma-separated: `you@gmail.com, puru@gmail.com` | |
-| `ANTHROPIC_API_KEY` | your `sk-ant-…` key | ✅ |
+| `ANTHROPIC_API_KEY` | your `sk-ant-…` key (option A) | ✅ |
+| `FOUNDRY_ENDPOINT` | option B only: `https://YOUR-RESOURCE.services.ai.azure.com/anthropic` | |
+| `FOUNDRY_API_KEY` | option B only: the Foundry key | ✅ |
+| `FOUNDRY_DEPLOYMENT` | option B, optional: deployment name (default `claude-haiku-4-5`) | |
+| `ADMIN_EMAILS` | optional: who sees the "things to check in the sheet" notes (default: `OWNER_EMAIL`) | |
+| `MS_TENANT` | optional: `consumers` (default) for personal Microsoft accounts, `common` if staff also use work accounts | |
 | `PUBLIC_AGENT` | optional: `off` hides the agent from visitors (they keep the free slab list) | |
 
-Names must be exactly as shown: capitals, underscores, no spaces.
+Names must be exactly as shown: capitals, underscores, no spaces. A name like `sf_CLIENT_SECRET` is not found; Netlify can't rename a variable, so add it again with the right name and delete the old one.
+
+**All emails and the client ID are set only here.** A new app registration or a new staff email never needs a code change: edit the variable and redeploy.
 
 ## Step 7: Your settings in `site/js/config.js`
 
@@ -155,8 +171,8 @@ On GitHub, open `site/js/config.js` → pencil icon, and check:
 ```js
 company: "Our Stone Studio",
 companyDetails: { address: "YOUR STREET, CITY, VA ZIP", phone: "999-999-9999", email: "outstonestudio@gmail.com" },
-adminEmails: ["weworkforuandus@gmail.com"],        // who sees the "things to check in the sheet" notes
-microsoft: { clientId: "PASTE-APPLICATION-CLIENT-ID", tenant: "consumers" },
+adminEmails: [],                                   // leave empty: Netlify ADMIN_EMAILS (or the owner) decides
+microsoft: { clientId: "", tenant: "consumers" },  // leave clientId empty: read from Netlify MS_CLIENT_ID
 excel: { sheet: "", ... },                         // empty = newest month sheet
 ```
 
@@ -191,6 +207,8 @@ Keep the Excel file **closed in desktop Excel** while testing saves.
 
 ## Day to day
 
+- **Ask the agent:** on Live Inventory, tap **Ask the agent** (bottom right). Answers show picture tiles of the lots it found; tap one to open that lot.
+
 - **New month:** add the new sheet (e.g. "DEC 2026") in Excel. The site uses the newest month sheet automatically.
 - **Add staff:** add their email to `ALLOWED_EMAILS` → redeploy. They need a Microsoft account with that email (a Gmail address works if they made a free Microsoft account with it at https://account.microsoft.com).
 - **Remove staff:** remove the email → redeploy.
@@ -221,6 +239,7 @@ Keep the Excel file **closed in desktop Excel** while testing saves.
 | Name shows **"· view only"** after staff sign-in | That email isn't in `ALLOWED_EMAILS`, or they signed in with another Microsoft account. |
 | Agent: **"isn't set up: add ANTHROPIC_API_KEY"** or a Claude error | Add the key / check credit and spend limit in the Anthropic Console. |
 | Quote form says "Couldn't send" | Enable form detection in Netlify (step 9) and redeploy. |
+| "Site not found" (Netlify page) | The address is wrong or the project was renamed. Copy the exact address from the top of your Netlify project page. |
 | Site shows old content | Press **Ctrl + F5**, or open a new private window. |
 
 ## Security

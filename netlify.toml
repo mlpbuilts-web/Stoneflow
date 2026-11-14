@@ -7,6 +7,7 @@
   node_bundler = "esbuild"
 
 # Security headers: no other site may frame this one; scripts only from this site.
+# The Claude / Foundry calls happen on the server (netlify/functions), so they need no entry here.
 [[headers]]
   for = "/*"
   [headers.values]
