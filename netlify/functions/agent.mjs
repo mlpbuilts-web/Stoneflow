@@ -7,6 +7,10 @@
 //   ALLOWED_EMAILS      staff who may change the inventory
 //   PUBLIC_AGENT        optional: "off" turns the read-only agent off for visitors
 //   CLAUDE_MODEL        optional, default claude-haiku-4-5-20251001
+// Or use Claude through Microsoft Foundry (billed on your Azure subscription) instead of ANTHROPIC_API_KEY:
+//   FOUNDRY_ENDPOINT    e.g. https://YOUR-RESOURCE.services.ai.azure.com/anthropic
+//   FOUNDRY_API_KEY     the Foundry resource key
+//   FOUNDRY_DEPLOYMENT  optional, your deployment name (default claude-haiku-4-5)
 import { json, caller, rateLimited, ipOf, env } from "../lib/common.mjs";
 
 const EDIT_TOOLS = new Set(["find_lots", "record_sale", "set_hold", "create_sales_order", "cancel_sales_order", "find_orders"]);
@@ -23,8 +27,8 @@ Reply briefly: short lines, "•" for list items, **bold** only for the key numb
 
 export default async (req, context) => {
   if (req.method !== "POST") return json({ error: "Use POST." }, 405);
-  const key = env("ANTHROPIC_API_KEY");
-  if (!key) return json({ error: "The agent isn't set up: add ANTHROPIC_API_KEY in Netlify." }, 500);
+  const foundry = env("FOUNDRY_ENDPOINT").replace(/\/+$/, ""), key = foundry ? env("FOUNDRY_API_KEY") : env("ANTHROPIC_API_KEY");
+  if (!key) return json({ error: foundry ? "The agent isn't set up: add FOUNDRY_API_KEY in Netlify." : "The agent isn't set up: add ANTHROPIC_API_KEY (or FOUNDRY_ENDPOINT + FOUNDRY_API_KEY) in Netlify." }, 500);
 
   const user = await caller(req).catch(() => null);
   const editor = user?.role === "editor";
@@ -54,10 +58,10 @@ export default async (req, context) => {
     useSystem = VIEWER_RULES + `\nToday is ${new Date().toDateString()}.`;
   }
 
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
+  const r = await fetch(foundry ? `${foundry}/v1/messages` : "https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model: env("CLAUDE_MODEL") || "claude-haiku-4-5-20251001", max_tokens: editor ? 1024 : 700, system: useSystem, messages, tools: useTools }),
+    headers: { [foundry ? "api-key" : "x-api-key"]: key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+    body: JSON.stringify({ model: foundry ? (env("FOUNDRY_DEPLOYMENT") || "claude-haiku-4-5") : (env("CLAUDE_MODEL") || "claude-haiku-4-5-20251001"), max_tokens: editor ? 1024 : 700, system: useSystem, messages, tools: useTools }),
   });
   const d = await r.json().catch(() => ({}));
   if (!r.ok) return json({ error: r.status === 429 ? "The agent is busy. Try again in a moment." : `Claude error ${r.status}: ${d?.error?.message || "unknown"}` }, 502);

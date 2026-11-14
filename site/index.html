@@ -3,81 +3,66 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>StoneFlow Surfaces</title>
-<meta name="description" content="Quartz, granite and calacatta slabs in stock for fabricators.">
+<title>Our Stone Studio | Quartz & granite slabs in Virginia</title>
+<meta name="description" content="Quartz, granite and onyx countertop slabs in Virginia, with live stock online.">
+<meta property="og:title" content="Our Stone Studio | Quartz & granite slabs in Virginia">
+<meta property="og:description" content="Quartz, granite and onyx countertop slabs in Virginia, with live stock online.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 132 132' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='4' y='4' width='124' height='124' rx='22' fill='%231F2326'/%3E%3Cpath d='M18 104 C 44 92, 52 70, 72 62 S 104 40, 116 22' fill='none' stroke='%23C39A5B' stroke-width='7' stroke-linecap='round'/%3E%3Cpath d='M60 70 C 66 84, 82 94, 98 98' fill='none' stroke='%23C39A5B' stroke-width='3.5' stroke-linecap='round' opacity='.75'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/site.css">
 </head>
 <body>
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#home"><b id="brandName">StoneFlow Surfaces</b><span>Slab yard</span></a>
+    <a class="brand" href="/" aria-label="Our Stone Studio home" style="color:var(--ink)"><svg width="40" height="40" viewBox="0 0 132 132" aria-hidden="true"><rect x="4" y="4" width="124" height="124" rx="22" fill="currentColor"/><path d="M18 104 C 44 92, 52 70, 72 62 S 104 40, 116 22" fill="none" stroke="#C39A5B" stroke-width="7" stroke-linecap="round"/><path d="M60 70 C 66 84, 82 94, 98 98" fill="none" stroke="#C39A5B" stroke-width="3.5" stroke-linecap="round" opacity=".75"/></svg><span class="wm"><b id="brandName">Our Stone</b><span>Studio</span></span></a>
     <nav class="nav" aria-label="Main">
-      <a href="#collections" class="hide-sm">Slabs</a>
-      <a href="#process" class="hide-sm">How it works</a>
-      <a href="#visit">Visit</a>
+      <a href="slabs.html">Slabs</a>
+      <a href="quartz.html" class="hide-sm">Quartz</a>
+      <a href="granite.html" class="hide-sm">Granite</a>
+      <a href="trade.html" class="hide-sm">Trade</a>
+      <a href="faq.html" class="hide-sm">FAQ</a>
+      <a href="contact.html">Contact</a>
       <a class="btn primary" href="#staff" id="staffLink">Live Inventory</a>
     </nav>
   </div>
 </header>
 
-<!-- ============ PUBLIC SITE ============ -->
+<!-- ============ PUBLIC HOME ============ -->
 <main id="home-view">
   <div class="wrap">
     <section class="hero">
       <div>
-        <span class="eyebrow">Quartz · Granite · Calacatta · Onyx</span>
-        <h1>Slabs in the yard, <em>ready to cut.</em></h1>
-        <p>Jumbo and regular quartz, granite and onyx for countertop fabricators. Pick your lot, we hold it, you pick it up.</p>
-        <div class="ctas"><a class="btn primary" href="#staff">See what's in stock</a><a class="btn" href="#visit">Book a yard visit</a></div>
+        <span class="eyebrow">Quartz · Granite · Onyx · Virginia</span>
+        <h1>Stone countertops, <em>chosen from real slabs.</em></h1>
+        <p>Browse the slabs in our yard right now, save the ones you love, and get a quote from Our Stone Studio. Our stock list updates live, so what you see is what's here.</p>
+        <div class="ctas"><a class="btn primary" href="slabs.html">Browse live slabs</a><a class="btn" href="contact.html">Get a quote</a></div>
       </div>
-      <div class="slab" aria-hidden="true"><canvas id="heroSlab" width="1016" height="512"></canvas><span class="tag">Calacatta · 127 × 64 in · Bookmatched</span></div>
+      <div class="slab" aria-hidden="true"><canvas id="heroSlab" width="1016" height="512"></canvas><span class="tag"><span class="live-dot"></span>Calacatta style · in stock</span></div>
     </section>
     <div class="facts">
-      <div><b>300+</b><span>lots on racks</span></div>
-      <div><b>14</b><span>collections</span></div>
-      <div><b>138 × 79</b><span>largest jumbo, inches</span></div>
-      <div><b>Same day</b><span>holds for fabricators</span></div>
+      <div><b data-live="free">…</b><span>slabs available now</span></div>
+      <div><b data-live="colors">…</b><span>colors in stock</span></div>
+      <div><b>7 am – 9 pm</b><span>our hours</span></div>
+      <div><b>EN · ES</b><span>stock assistant</span></div>
     </div>
 
     <section class="block" id="collections">
-      <div class="block-h"><h2>Collections</h2><p>Every lot is a batch of matched slabs from one block. Ask for the lot number when you order so your kitchen matches.</p></div>
+      <div class="block-h"><h2>Our stone</h2><p>Every lot is a batch of matched slabs from one block. Ask for the lot number so your whole kitchen matches.</p></div>
       <div class="coll" id="collGrid"></div>
     </section>
 
     <section class="block" id="process">
-      <div class="block-h"><h2>How it works</h2><p>Our sales team checks the live inventory before every quote, so the slab you pick is the slab you get.</p></div>
+      <div class="block-h"><h2>How it works</h2><p>From browsing to your slabs being held, without guesswork about what's in stock.</p></div>
       <div class="steps">
-        <div><h3>Pick a lot</h3><p>Browse the racks or send us the color and size. We confirm how many slabs of that lot are free.</p></div>
-        <div><h3>We hold it</h3><p>Your salesperson puts the slabs on hold under your name while you confirm the job.</p></div>
-        <div><h3>Pick up</h3><p>Bring your truck and A-frame. We load the held slabs and mark them sold the same minute.</p></div>
+        <div><h3>Pick your slabs</h3><p>Browse live stock online or ask our assistant, in English or Spanish, by voice or text.</p></div>
+        <div><h3>Get a quote</h3><p>Send the slabs you saved and a few details about your project. We reply within one business day.</p></div>
+        <div><h3>We hold them for you</h3><p>Once you decide, we hold your slabs under your name and send a written sales order.</p></div>
       </div>
     </section>
 
-    <section class="block" id="visit">
-      <div class="block-h"><h2>Visit the yard</h2></div>
-      <div class="visit">
-        <dl>
-          <dt>Hours</dt><dd>Mon–Fri 7:30–4:30 · Sat 8:00–12:00</dd>
-          <dt>Address</dt><dd>Sample address, replace in index.html</dd>
-          <dt>Phone</dt><dd>(000) 000-0000</dd>
-          <dt>Pick-up</dt><dd>Bring an A-frame; forklift loading at dock 2</dd>
-        </dl>
-        <form class="contact" id="contactForm" name="contact" method="POST" data-netlify="true" netlify-honeypot="company_url">
-          <input type="hidden" name="form-name" value="contact">
-          <p hidden><label>Leave empty <input name="company_url"></label></p>
-          <div class="two">
-            <div class="field"><label for="cName">Name</label><input id="cName" name="name" required autocomplete="name"></div>
-            <div class="field"><label for="cPhone">Phone</label><input id="cPhone" name="phone" autocomplete="tel"></div>
-          </div>
-          <div class="field"><label for="cColor">Color or lot # you're after</label><input id="cColor" name="color" placeholder="e.g. Zircon 127 × 64, or IQ466"></div>
-          <div class="field"><label for="cMsg">Message</label><textarea id="cMsg" name="message" rows="3"></textarea></div>
-          <div><button class="btn primary" type="submit">Send request</button> <span class="eyebrow" id="cStatus"></span></div>
-        </form>
-      </div>
-    </section>
+    <section class="block"><div class="band"><div><h2>Ask about any slab</h2><p>Our stock assistant checks live availability in seconds. Try "Is Zircon available?" or "¿Hay Calacatta jumbo?"</p></div><a class="btn" href="#staff">Ask the assistant</a></div></section>
   </div>
 </main>
 
@@ -154,10 +139,15 @@
   </div>
 </main>
 
-<footer><div class="wrap"><span id="footName">StoneFlow Surfaces</span><span>Demo site · inventory runs from the yard's Excel file on OneDrive</span></div></footer>
+<footer><div class="wrap"><div class="cols">
+  <div><h4>Our Stone Studio</h4><p style="margin:0">Quartz, granite and quartz onyx slabs in Virginia.<br>Hours: 7 am – 9 pm<br><a href="tel:999-999-9999">999-999-9999</a> · <a href="mailto:outstonestudio@gmail.com">outstonestudio@gmail.com</a></p></div>
+  <div><h4>Stone</h4><ul><li><a href="slabs.html">Live slabs</a></li><li><a href="quartz.html">Quartz</a></li><li><a href="granite.html">Granite</a></li><li><a href="/#staff">Ask the stock assistant</a></li></ul></div>
+  <div><h4>Company</h4><ul><li><a href="trade.html">Trade program</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact &amp; quote</a></li></ul></div>
+</div><p style="width:100%;margin:16px 0 0">© <span data-year></span> Our Stone Studio. Stock levels update live from our inventory.</p></div></footer>
 <div class="busy" id="busy" hidden></div>
 
 <script src="js/config.js"></script>
+<script src="js/site.js"></script>
 <script src="js/stonesheet.js"></script>
 <script src="js/xlsxlite.js"></script>
 <script src="js/auth.js"></script>

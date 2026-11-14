@@ -1,50 +1,25 @@
-# StoneFlow Surfaces: website + OneDrive inventory agent
+# Our Stone Studio: website + live inventory agent
 
-## Who can do what
+A public stone website (home, live slab catalog, Quartz, Granite, Trade, FAQ, Contact/quote) with a **Live Inventory** page and an AI agent.
+All stock comes from one Excel file, **LIVE INVENTORY.xlsx**, in the owner's OneDrive.
 
-| Person | Sign-in | Can |
+| Who | Sign-in | Can do |
 |---|---|---|
-| Anyone (customers, public) | none | See live stock (lot #, color, size, stock, on hold, free) and ask the agent "is IQ466 available?" in English or Spanish. No rack locations, no names of who holds slabs, no sales orders. |
+| Anyone (customers, public) | none | Browse live slabs, save slabs, ask for a quote, ask the agent "Is Zircon available?" (English or Spanish, typing or voice). Read-only: no rack locations, holder names or orders. |
 | Signed in, not on the staff list | Microsoft | Same as anyone (read-only). |
-| Staff (owner + `ALLOWED_EMAILS`) | Microsoft | Everything: sales, holds, sales orders (PDF), undo, sales log. |
+| Staff (`OWNER_EMAIL` + `ALLOWED_EMAILS`) | Microsoft | Everything: record sales and holds, create and cancel sales orders (PDF), Undo. |
 
-The site's server opens the Excel file with the **owner's** OneDrive connection (connected once at `/api/connect`).
-Staff don't need the Excel file shared with them, and nobody's browser ever gets the owner's access.
+How it fits together:
 
-### Netlify environment variables
-
-| Variable | Value |
-|---|---|
-| `MS_CLIENT_ID` | Azure Application (client) ID |
-| `MS_CLIENT_SECRET` | Azure client secret **Value** (mark as secret) |
-| `OWNER_EMAIL` | the Microsoft account that owns the Excel file |
-| `EXCEL_PATH` | path inside the owner's OneDrive, e.g. `/Stone/LIVE INVENTORY.xlsx` |
-| `ALLOWED_EMAILS` | staff who may change the inventory, comma-separated |
-| `ANTHROPIC_API_KEY` | Claude API key (mark as secret) |
-| `PUBLIC_AGENT` | optional: `off` hides the agent from visitors |
-
-Azure: keep the Single-page application redirect `https://YOUR-SITE.netlify.app/`, and add a **Web** platform redirect
-`https://YOUR-SITE.netlify.app/api/connect` plus a client secret. After deploying, the owner opens
-`https://YOUR-SITE.netlify.app/api/connect` once and signs in.
-
-Older setup notes below describe the first version, where each person opened the file with their own OneDrive access.
-
-A company website with a **Staff portal** that works directly on your **LIVE_INVENTORY.xlsx in OneDrive**. Nothing gets copied into a separate database.
-
-- Staff sign in with their Microsoft account.
-- They ask the agent: **"Is IQ466 available?"**, **"Sold 2 slabs of IQ466"**, **"Hold 5 IQ1466J for Puru"**.
-- The agent writes each sale into the next empty sale column (X, Y, Z… on that lot's row), so STOCK, BALANCE and SALES update with your own formulas. Holds go into the salesperson's column (SUNNY.C … DEV).
-- Staff can also record sales, returns and holds by hand from the lot list. Every change has **Undo**.
-- A **StoneFlow sales log.csv** is kept next to the Excel file, recording who sold what, with notes.
-- **Sales orders:** say *"Create a sales order for ABC Granite: 3 slabs of IQ466 at $450 and 2 of IQ1466J"*. The agent:
-  1. checks every line against live stock (if any line is short, nothing is recorded and it tells you what is free),
-  2. deducts the slabs in the Excel file,
-  3. saves the order in **StoneFlow sales orders.csv** next to the Excel file (order number like SO-261013-01, client, lots, sizes, slabs, sq ft, prices),
-  4. shows a printable sales order you can print or download.
-
-  You can cancel an order from the chat, from the order itself, or by asking the agent ("cancel SO-261013-01"). Cancelling puts the slabs back.
-
-Only the changed cells are touched. Formatting, merged cells, colors and formulas stay as they are.
+```
+Visitor / staff browser ──▶ Netlify website (site/)
+        │  stock questions, sales, orders
+        ▼
+Netlify functions (netlify/functions) ── Claude API key, staff list, owner's OneDrive connection (kept on the server)
+        │
+        ├──▶ Claude (the agent's brain)
+        └──▶ Owner's OneDrive: LIVE INVENTORY.xlsx  (+ sales log and sales orders CSV files next to it)
+```
 
 ---
 
@@ -52,153 +27,214 @@ Only the changed cells are touched. Formatting, merged cells, colors and formula
 
 | Path | What it is |
 |---|---|
-| `site/index.html` | The website (public pages + Staff portal at `#staff`) |
-| `site/js/config.js` | **Your settings**: Microsoft app ID and the Excel file link |
-| `site/js/portal.js` | Staff portal and the agent's tools |
-| `site/js/stores.js` | Reads and writes the Excel file on OneDrive |
-| `site/js/xlsxlite.js` | Edits single cells inside the .xlsx without changing anything else |
-| `site/js/stonesheet.js` | Understands your LIVE_INVENTORY layout (lots, holds, sections, outside colors) |
-| `site/js/auth.js` | Microsoft sign-in |
-| `netlify/functions/agent.mjs` | Server function that holds the Claude API key and checks the staff list |
+| `site/index.html` | Home page + the **Live Inventory** page (opens at `/#staff`) |
+| `site/slabs.html` | Live slab catalog: search, filters, save, quote |
+| `site/quartz.html`, `granite.html`, `trade.html`, `faq.html`, `contact.html` | Content pages and the quote form |
+| `site/js/config.js` | **Your settings**: company details, Microsoft app ID, admin emails |
+| `site/js/site.js`, `catalog.js`, `home.js` | Public pages: live numbers, catalog, saved slabs, forms |
+| `site/js/portal.js` | Live Inventory page and the agent's tools |
+| `site/js/stores.js`, `xlsxlite.js`, `stonesheet.js` | Read and write the Excel file without changing formulas or formatting |
+| `site/js/auth.js` | Microsoft sign-in for staff |
+| `site/css/site.css` | All styles (brand colors and fonts at the top) |
+| `netlify/functions/*.mjs` | Server: agent (`/api/agent`), public stock (`/api/inventory`), editor file access (`/api/file`), who-am-I (`/api/me`), OneDrive connection (`/api/connect`) |
+| `netlify/lib/*` | Shared server code |
 | `netlify.toml` | Hosting settings and security headers |
-
-## How it works
-
-```
-Staff browser ──sign in──▶ Microsoft
-     │  reads/writes cells ──▶ OneDrive: LIVE_INVENTORY.xlsx (+ sales log)
-     │  asks the agent ──▶ /api/agent (your Netlify function) ──▶ Claude
-     ◀── Claude asks for find_lots / record_sale / set_hold; the browser runs them on the Excel file
-```
-
-The Claude API key never reaches the browser. The function only answers people whose Microsoft email is on your `ALLOWED_EMAILS` list.
-
-### Personal OneDrive vs OneDrive for Business
-
-| Your OneDrive | How the site writes | Good to know |
-|---|---|---|
-| **Personal** (outlook.com, gmail sign-in) | Downloads the file, changes the cells, and uploads it with a version check. If someone else saved first, it re-reads and retries. | If the file is open in **desktop Excel without AutoSave**, saves are blocked until it's closed. Excel for the web shows "newer version available"; click refresh. |
-| **Business / SharePoint** (Microsoft 365) | Writes cells live through Microsoft's Excel API | Works while others have the file open. |
-
-Microsoft's live Excel API only works on Business/SharePoint, so personal OneDrive uses the file method. The site picks the right one automatically.
+| `package.json` | One server package (`@netlify/blobs`), installed by Netlify automatically |
 
 ---
 
-## Setup (about 45 minutes, on a computer)
+# Step-by-step setup (about 1 hour)
 
-You need:
-- a **Microsoft account** that owns the Excel file
-- a free **Netlify** account (https://netlify.com)
-- an **Anthropic Console** account with a little credit (https://console.anthropic.com)
-- **Node.js LTS** (https://nodejs.org)
+Do these in order. If your Netlify site, Azure app or Claude key already exist and still work, the step tells you what to check instead of redoing it.
 
-### Step 1: Put the Excel file in OneDrive and share it
+## Step 0: Accounts you need (all free to start)
 
-1. Upload **LIVE_INVENTORY.xlsx** to your OneDrive.
-2. Right-click it → **Share** → choose **Specific people** → add each staff member's Microsoft email → set **Can edit**.
-3. Click **Copy link**. Save this link; it's your `shareUrl`.
+| Account | Used for | Link |
+|---|---|---|
+| GitHub | Stores the code; Netlify publishes from it | https://github.com |
+| Netlify | Hosts the website and server | https://app.netlify.com |
+| Microsoft account (the **owner** of the Excel file) | OneDrive file + Azure app registration | https://portal.azure.com |
+| Anthropic Console | Claude API key for the agent | https://console.anthropic.com |
 
-Each staff member needs a Microsoft account with the same email you shared with. A free one at https://account.microsoft.com is fine.
+Turn on two-step sign-in for all four.
 
-### Step 2: Register the app with Microsoft (Azure, free)
+## Step 1: The Excel file in OneDrive
 
-1. Go to https://portal.azure.com and sign in with the Microsoft account that owns the file. If it asks you to create a free Azure account, do that; there's no charge for app registrations.
-2. Search for **App registrations** → **New registration**.
-   - Name: `StoneFlow inventory`
-   - Supported account types: **Accounts in any organizational directory and personal Microsoft accounts**
-   - Redirect URI: platform **Single-page application (SPA)**. Use `https://YOUR-SITE.netlify.app/` (you get this address in step 4, so you can add it afterwards).
-3. Click **Register**. Copy the **Application (client) ID**.
-4. Open **API permissions** → **Add a permission** → **Microsoft Graph** → **Delegated** → tick `User.Read`, `Files.ReadWrite.All`, `offline_access` → **Add permissions**.
+1. Sign in to https://onedrive.live.com with the owner's Microsoft account.
+2. Put the inventory at **My files → Stone → LIVE INVENTORY.xlsx** (any folder works; just remember the path).
+3. Write down its path **inside OneDrive**, without "My files": for example `/Stone/LIVE INVENTORY.xlsx`. Spaces and capitals must match exactly, and the ending is `.xlsx`.
 
-### Step 3: Get a Claude API key
+You do **not** need to share the file with staff.
 
-1. In the Anthropic Console, under **Billing**, add credit (for example $5). Under **Limits**, set a monthly spend limit (for example $20).
-2. **API Keys** → **Create Key**. Copy it (starts with `sk-ant-`).
+## Step 2: Put the code on GitHub
 
-### Step 4: Put the site online (Netlify)
+**Easiest (web, no tools):**
+1. Unzip this project on your computer.
+2. On GitHub, open your repository (or click **New** to create one, e.g. `Stone`, and choose **Private**).
+3. Click **Add file → Upload files**.
+4. Open the unzipped `stoneflow-site` folder, select **everything inside it** (`site`, `netlify`, `netlify.toml`, `package.json`, `README.md`, `.gitignore`) and drag it in. Folders keep their structure.
+5. Click **Commit changes**.
 
-Open a terminal in this folder:
-
+**Or with Git (PowerShell):**
 ```
-npx netlify-cli login
-npx netlify-cli init          # choose "Create & configure a new site", pick a site name
-npx netlify-cli env:set ANTHROPIC_API_KEY sk-ant-YOUR-KEY
-npx netlify-cli env:set ALLOWED_EMAILS "you@gmail.com, ravi@yourcompany.com"
+cd "C:\path\to\stoneflow-site"
+git init
+git add .
+git commit -m "Our Stone Studio site"
+git branch -M main
+git remote add origin https://github.com/YOUR-NAME/Stone.git
+git push -u origin main
 ```
+(If the repository already has files, run `git pull origin main --allow-unrelated-histories` before `git push`.)
 
-Now your site address is `https://YOUR-SITE.netlify.app`. Add it as the SPA redirect URI in Azure (step 2.2), with the trailing `/`.
+Never put the Excel file, the Claude key or the Azure secret in GitHub.
 
-Netlify's drag-and-drop upload doesn't include server functions, so use the commands above (or connect a GitHub repo).
+## Step 3: Create (or check) the Netlify site
 
-### Step 5: Fill in the settings
+**New site:**
+1. Netlify → **Add new project → Import an existing project → GitHub** → pick your repository.
+2. Netlify reads `netlify.toml`, so leave the settings as they are (publish directory `site`, functions `netlify/functions`). Click **Deploy**.
+3. Note your address, e.g. `https://marvelous11.netlify.app`. Below it's called **YOUR-SITE**.
 
-Edit `site/js/config.js`:
+**Existing site:** open it and check **Project configuration → Build & deploy** shows the GitHub repository and that the last deploy is **Published**.
+
+Plan: the free plan pauses the site if monthly credits run out (each deploy uses some). For a business, use **Personal ($9/month)**.
+
+## Step 4: Microsoft app registration (Azure)
+
+Go to https://portal.azure.com → **App registrations**. Open **StoneFlow inventory** if it exists, or click **New registration**:
+- Name: `Our Stone Studio inventory`
+- Supported account types: **Accounts in any organizational directory and personal Microsoft accounts**
+- Leave the redirect empty for now → **Register**.
+
+Then set these (check each one on an existing app):
+
+1. **Overview:** copy the **Application (client) ID**.
+2. **Authentication → Add a platform → Single-page application:** `https://YOUR-SITE/` (with the slash at the end).
+3. **Authentication → Add a platform → Web:** `https://YOUR-SITE/api/connect` (no slash at the end). Leave the token checkboxes unticked.
+
+   It must look like this:
+
+   | Platform | Redirect URI |
+   |---|---|
+   | Web | `https://YOUR-SITE/api/connect` |
+   | Single-page application | `https://YOUR-SITE/` |
+
+4. **Manifest:** make sure `"requestedAccessTokenVersion": 2` and `"signInAudience": "AzureADandPersonalMicrosoftAccount"`. Save.
+5. **API permissions:** Microsoft Graph, Delegated: `User.Read`, `Files.ReadWrite`, `offline_access`.
+6. **Certificates & secrets → New client secret** → 24 months → **Add**. Copy the **Value** column straight away (not the Secret ID). It's shown once.
+
+Changes in Azure can take 5–10 minutes to start working.
+
+## Step 5: Claude API key
+
+1. https://console.anthropic.com → **Billing**: add credit (e.g. $5). **Limits**: set a monthly limit (e.g. $20).
+2. **API Keys → Create Key**: workspace **Default workspace**, a long expiry (90 days or 1 year). Copy the key (`sk-ant-…`).
+3. The key is shown once. If you lose it, delete it and create a new one.
+
+## Step 6: Netlify environment variables
+
+Netlify → your site → **Project configuration → Environment variables → Add a variable**. Add each one (scope: **All scopes**, or at least **Functions**):
+
+| Key | Value | Secret? |
+|---|---|---|
+| `MS_CLIENT_ID` | Application (client) ID from step 4 | |
+| `MS_CLIENT_SECRET` | the secret **Value** from step 4 | ✅ |
+| `OWNER_EMAIL` | the owner's Microsoft email, e.g. `weworkforuandus@gmail.com` | |
+| `EXCEL_PATH` | `/Stone/LIVE INVENTORY.xlsx` (your path from step 1) | |
+| `ALLOWED_EMAILS` | staff who may make changes, comma-separated: `you@gmail.com, puru@gmail.com` | |
+| `ANTHROPIC_API_KEY` | your `sk-ant-…` key | ✅ |
+| `PUBLIC_AGENT` | optional: `off` hides the agent from visitors (they keep the free slab list) | |
+
+Names must be exactly as shown: capitals, underscores, no spaces.
+
+## Step 7: Your settings in `site/js/config.js`
+
+On GitHub, open `site/js/config.js` → pencil icon, and check:
 
 ```js
-microsoft: { clientId: "PASTE-APPLICATION-CLIENT-ID", tenant: "common" },
-excel:     { shareUrl: "PASTE-THE-ONEDRIVE-SHARE-LINK", ... },
+company: "Our Stone Studio",
+companyDetails: { address: "YOUR STREET, CITY, VA ZIP", phone: "999-999-9999", email: "outstonestudio@gmail.com" },
+adminEmails: ["weworkforuandus@gmail.com"],        // who sees the "things to check in the sheet" notes
+microsoft: { clientId: "PASTE-APPLICATION-CLIENT-ID", tenant: "consumers" },
+excel: { sheet: "", ... },                         // empty = newest month sheet
 ```
 
-Also put your company details in `companyDetails` (printed on sales orders), and replace the sample address and phone number in `site/index.html` (the **Visit the yard** section).
+**Commit changes**. Company details print on sales orders. Also replace the `[bracketed]` placeholders in `contact.html` (street address) and `trade.html` / `faq.html` (trade and hold terms).
 
-Then deploy:
+## Step 8: Deploy, then connect OneDrive (once)
 
-```
-npx netlify-cli deploy --prod
-```
+1. Netlify → **Deploys → Trigger deploy → Deploy project**. Wait for **Published**. (Do this after every change to environment variables.)
+2. Open `https://YOUR-SITE/api/connect`, sign in with the **owner** account, click **Accept**. It returns to Live Inventory.
 
-### Step 6: Test
+The connection is saved on the server. Redo this only if the site says the OneDrive connection expired (after about 90 days without any use) or you change the owner account.
 
-1. Open your site → **Staff portal** → **Sign in with Microsoft** → accept the permissions.
-2. The portal shows your lots and the sheet name (e.g. AUG 2026).
-3. In the agent, try:
-   - `Is IQ466 available?`
-   - `Sold 2 slabs of IQ466`: open the Excel file; the 2 is in the next empty cell of row 219, and STOCK dropped by 2. Then tap **Undo** in the chat.
-   - `Hold 3 IQ1466J for Puru`, then `release Puru's hold on IQ1466J`.
-   - `Sold 999 of IQ466`: it refuses.
-   - `Create a sales order for Test Client: 1 slab of IQ466 at $400`: you get an order number. Check the **Sales orders** panel and **StoneFlow sales orders.csv** in OneDrive, then click **Cancel order**.
+## Step 9: Quote form emails
 
-### Step 7: Contact form (optional)
+Netlify → **Forms → Enable form detection**, then deploy once more. Under **Forms → Form notifications** add an email notification to `outstonestudio@gmail.com`.
 
-The **Visit** form uses Netlify Forms. In Netlify: **Forms** → **Enable form detection** → redeploy. Messages appear under Forms, and you can turn on email notifications there.
+## Step 10: Test
+
+| Test | Expected |
+|---|---|
+| Open `https://YOUR-SITE` on your phone (not signed in) | Home shows live numbers (slabs available, colors) |
+| **Slabs** page | Lots with filters; Save a slab, then **Quote my saved slabs** fills the form |
+| **Live Inventory** (not signed in) | Stock list without a Rack column; agent answers "¿Hay Zircon disponible?" and refuses to sell |
+| **Live Inventory → Staff sign in** with a staff email | Your name shows without "· view only"; Rack column and Sales orders appear |
+| Agent: `Sold 2 slabs of IQ466` | Recorded; tap **Undo** to reverse |
+| Agent: `Create a sales order for Test Client: 1 slab of IQ466 at $400` | Order number; **View → Save as PDF**; then **Cancel order** |
+| Quote form on **Contact** | Message appears in Netlify Forms and your email |
+
+Keep the Excel file **closed in desktop Excel** while testing saves.
 
 ---
 
 ## Day to day
 
-- **New month:** add the new month's sheet (e.g. "SEP 2026") as usual. The portal picks the newest month sheet automatically. You can also switch sheets in the portal.
-- **Adding staff:** share the Excel file with them (step 1), and add their email to `ALLOWED_EMAILS` (`npx netlify-cli env:set …`, then redeploy).
-- **Removing staff:** remove them from the file's sharing and from `ALLOWED_EMAILS`.
-- **Rows full:** each row holds sales in columns X–BL (41 entries). If a lot's row fills up, the agent tells you; start the new month sheet.
-- **Sales-manager holds** ("10 puru" in HOLD BY SALES.MGR) count as held but stay editable only in Excel.
-- **Outside colors:** a sale lowers the STK number in that list.
+- **New month:** add the new sheet (e.g. "DEC 2026") in Excel. The site uses the newest month sheet automatically.
+- **Add staff:** add their email to `ALLOWED_EMAILS` → redeploy. They need a Microsoft account with that email (a Gmail address works if they made a free Microsoft account with it at https://account.microsoft.com).
+- **Remove staff:** remove the email → redeploy.
+- **Excel open?** Reading stock always works. Saving sales and orders needs the file closed in Excel (personal OneDrive locks it). Microsoft 365 Business (~$7/user/month) removes this limit.
+- **Sales log and orders:** `StoneFlow sales log.csv` and `StoneFlow sales orders.csv` are created next to the Excel file.
+- **Change code from your computer:** run `git pull` first, then edit, `git add .`, `git commit -m "…"`, `git push`.
 
-## Security
+## Renewals
 
-- Staff sign in with Microsoft. Nobody can open the file without your OneDrive sharing.
-- The agent function checks every request against Microsoft and `ALLOWED_EMAILS`, and only allows the three inventory tools.
-- The Claude key exists only in Netlify's environment variables.
-- Security headers stop other sites from embedding yours and only allow scripts from your own site.
-- OneDrive keeps **version history** on the Excel file: right-click → **Version history** to restore any earlier copy.
-- Turn on two-step sign-in for your Microsoft, Netlify and Anthropic accounts.
-
-## Costs
-
-| Part | Cost |
-|---|---|
-| Netlify (free plan) | $0 |
-| OneDrive / Azure app registration | $0 (uses your existing OneDrive) |
-| Claude API (Haiku model) | about 1 cent per agent question; your spend limit caps it |
+| What | When | How |
+|---|---|---|
+| Claude API key | When it expires (the expiry you chose) | Create a new key → replace `ANTHROPIC_API_KEY` → redeploy |
+| Azure client secret | Every 24 months | New secret → replace `MS_CLIENT_SECRET` → redeploy |
+| OneDrive connection | Only after ~90 days without use | Open `/api/connect` again as the owner |
 
 ## Troubleshooting
 
 | You see | Fix |
 |---|---|
-| Sign-in error "redirect URI mismatch" | The site address in Azure must match exactly, including `https://` and the trailing `/`, under **Single-page application**. |
-| "Couldn't open the Excel file" | `shareUrl` must be a link to the file, shared with the account you signed in with, with **Can edit**. |
-| "the order file couldn't be saved" | The account must be able to create files in the Excel file's folder: share the **folder** (not only the file) with Can edit. Stock was still updated. |
-| "isn't on the staff list" | Add that email to `ALLOWED_EMAILS` and redeploy. |
-| "The Excel file is locked" | Someone has it open in desktop Excel without AutoSave. Close it or turn AutoSave on. |
-| "The Excel sheet changed and lot … moved" | Someone inserted or deleted rows in Excel. Tap **Refresh**. |
-| Agent says it's busy / Claude error | Check your Anthropic credit and spend limit. |
-| Excel shows old totals | Open the file in Excel; it recalculates on open. The portal always computes stock from OP + PURCHASE − SALES. |
+| **AADSTS9002326** (cross-origin token redemption) | The site address is under **Web** instead of **Single-page application**. Move `https://YOUR-SITE/` to Single-page application. |
+| **unauthorized_client … not enabled for consumers** or **AADSTS700016** | Azure supported account types must include personal accounts; in **Manifest** set `requestedAccessTokenVersion` 2 and `signInAudience` `AzureADandPersonalMicrosoftAccount`. Wait 10 minutes. |
+| **AADSTS90023** redirect_uri not valid (on `/api/connect`) | `https://YOUR-SITE/api/connect` must be under **Web**, exactly, no trailing slash. Wait 5–10 minutes, retry in a new private window. |
+| **"Not set up yet. Add MS_CLIENT_ID…"** | That environment variable is missing or misspelled, or there was no deploy after adding it. |
+| **"Inventory not connected yet"** | The owner opens `/api/connect` once (step 8). |
+| **"The Excel file wasn't found at EXCEL_PATH"** | Fix the path: starts with `/`, no "My files", exact name, ends in `.xlsx`. Redeploy. |
+| **"The Excel file is locked"** | Close it in Excel on every device (or wait a minute), then retry. |
+| **"No staff are allowed yet: set ALLOWED_EMAILS"** | Add `ALLOWED_EMAILS` and redeploy. |
+| Name shows **"· view only"** after staff sign-in | That email isn't in `ALLOWED_EMAILS`, or they signed in with another Microsoft account. |
+| Agent: **"isn't set up: add ANTHROPIC_API_KEY"** or a Claude error | Add the key / check credit and spend limit in the Anthropic Console. |
+| Quote form says "Couldn't send" | Enable form detection in Netlify (step 9) and redeploy. |
+| Site shows old content | Press **Ctrl + F5**, or open a new private window. |
+
+## Security
+
+- Staff sign in with Microsoft; only `OWNER_EMAIL` and `ALLOWED_EMAILS` can change stock, checked on the server for every request.
+- The Claude key, Azure secret and OneDrive connection stay on the server (Netlify); no browser gets them.
+- Visitors only see a cleaned-up stock list, and their agent has only a look-up tool, rate-limited per visitor.
+- OneDrive keeps version history: right-click the Excel file → **Version history** to restore an earlier copy.
+
+## Monthly cost (as of Nov 2026)
+
+| Item | Cost |
+|---|---|
+| Netlify Personal | $9 |
+| Domain (optional) | ~$1–2 |
+| Claude (Haiku 4.5), about 1–1.5¢ per question | ~$5–45 |
+| OneDrive, Azure app, Netlify Forms (low volume) | $0 |

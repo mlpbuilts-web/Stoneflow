@@ -30,8 +30,17 @@
   function flash(t) { note(`<span>${esc(t)}</span>`); clearTimeout(flash.t); flash.t = setTimeout(renderNote, 6000); }
 
   /* ---------- start ---------- */
+  // The Microsoft app ID comes from Netlify (MS_CLIENT_ID), so it's changed in one place only.
+  const boot = (async () => {
+    if (window.claude || CFG.serverMode === false || location.protocol === "file:") return;
+    try {
+      const d = await (await fetch("/api/me")).json();
+      if (d.clientId) CFG.microsoft = { clientId: d.clientId, tenant: d.tenant || "consumers" };
+    } catch {}
+  })();
   async function open() {
     if (S.started) return; S.started = true;
+    await boot;
     const use = (n) => (window.claude && typeof claude.use === "function") ? claude.use(n).catch(() => null) : Promise.resolve(null);
     const [sample, downloads] = await Promise.all([use("sample"), use("downloads")]);
     if (sample) { const lim = await sample.limits().catch(() => null); S.sample = lim?.tools ? sample : null; }
@@ -138,9 +147,9 @@
   /* ---------- rendering ---------- */
   function renderNote() {
     const m = S.meta; if (!m) return note("");
-    // Sheet notes are only for the people listed in adminEmails (config.js); everyone else sees no notice.
+    // Sheet notes are only for admins (Netlify ADMIN_EMAILS, or the owner); everyone else sees no notice.
     const admins = (CFG.adminEmails || []).map((x) => String(x).trim().toLowerCase()).filter(Boolean);
-    const isAdmin = S.mode === "demo" || (S.email && admins.includes(S.email));
+    const isAdmin = S.mode === "demo" || !!S.me?.isAdmin || (S.email && admins.includes(S.email));
     if (!isAdmin) return note("");
     const w = m.warnings || [];
     const src = S.mode === "demo"
@@ -169,18 +178,19 @@
     const rows = S.lots.filter((l) => (S.filter === "all" || (S.filter === "in" ? l.stock > 0 : l.stock <= 0)) && (!S.sec || l.section === S.sec) && matches(l, ts));
     $("invCount").textContent = `${rows.length} of ${S.lots.length} lots`;
     if (!rows.length) { box.innerHTML = `<div class="empty">No lots match.</div>`; return; }
-    const rack = !viewOnly(), ncol = rack ? 7 : 6;
-    let h = `<table><thead><tr><th>Lot #</th><th>Color</th><th>Size</th><th class="n">Stock</th><th class="n">Hold</th><th class="n">Free</th>${rack ? "<th>Rack</th>" : ""}</tr></thead><tbody>`, sec = null;
+    const rack = !viewOnly(), sw = (l) => (window.OSS ? window.OSS.swatch(l) : "background: var(--sunk)");
+    let h = "", sec = null;
     for (const l of rows) {
-      if (l.section !== sec) { sec = l.section; h += `<tr class="sec"><td colspan="${ncol}">${esc(sec || "—")}</td></tr>`; }
-      const hd = holdOf(l), fr = freeOf(l);
-      h += `<tr class="lotrow ${l.stock <= 0 ? "out" : ""} ${S.sel === l.id ? "sel" : ""}" data-id="${esc(l.id)}" tabindex="0">
-        <td class="code">${esc(l.lot || "—")}</td><td class="color">${esc(l.name)} ${l.bm ? '<span class="pill bm">BM</span>' : ""}</td>
-        <td>${esc(sizeOf(l))}</td><td class="n">${l.stock < 0 ? `<b class="neg">${l.stock}</b>` : l.stock}</td>
-        <td class="n">${hd ? `<span class="pill hold">${hd}</span>` : ""}</td><td class="n">${fr ? `<b class="free">${fr}</b>` : `<b class="zero">0</b>`}</td>
-        ${rack ? `<td class="loc" title="${esc(l.loc)}">${esc(l.loc)}</td>` : ""}</tr>`;
+      if (l.section !== sec) { if (sec !== null) h += "</div>"; sec = l.section; h += `<h4 class="tile-sec">${esc(sec || "Other")}</h4><div class="tiles">`; }
+      const hd = holdOf(l), fr = freeOf(l), size = sizeOf(l);
+      h += `<button type="button" class="tile ${l.stock <= 0 ? "out" : ""} ${S.sel === l.id ? "sel" : ""}" data-id="${esc(l.id)}" aria-label="${esc(`${l.lot || ""} ${l.name}, ${fr} free`)}">
+        <span class="tile-ic" style="${esc(sw(l))}" aria-hidden="true"></span>
+        <span class="tile-b"><b class="tile-name">${esc(l.name || "—")}</b>
+          <span class="tile-meta">${esc(l.lot || "no lot #")}${size ? " · " + esc(size) : ""}${l.bm ? " · BM" : ""}</span>
+          <span class="tile-nums"><span class="tn free" title="Free to sell">${Math.max(0, fr)} free</span>${hd ? `<span class="tn hold" title="On hold">${hd} held</span>` : ""}<span class="tn stock ${l.stock < 0 ? "neg" : ""}" title="In stock">${l.stock} stock</span></span>
+          ${rack && l.loc ? `<span class="tile-meta">Rack ${esc(l.loc)}</span>` : ""}</span></button>`;
     }
-    box.innerHTML = h + "</tbody></table>";
+    box.innerHTML = h + "</div>";
   }
   function renderCard() {
     const box = $("lotCard"), l = S.lots.find((x) => x.id === S.sel);
@@ -630,8 +640,7 @@ Reply briefly for staff on a phone: short lines, "•" for list items, **bold** 
     try { await undo(a); a.undone = true; renderMsgs(); } catch (err) { u.disabled = false; flash(err.message); }
   });
   const openLot = (id) => { S.sel = S.sel === id ? null : id; renderCard(); renderTable(); if (S.sel) $("lotCard").scrollIntoView({ block: "nearest" }); };
-  $("tablebox").addEventListener("click", (e) => { const r = e.target.closest("tr[data-id]"); if (r) openLot(r.dataset.id); });
-  $("tablebox").addEventListener("keydown", (e) => { const r = e.target.closest("tr[data-id]"); if (r && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openLot(r.dataset.id); } });
+  $("tablebox").addEventListener("click", (e) => { const r = e.target.closest("[data-id]"); if (r) openLot(r.dataset.id); });
   $("search").addEventListener("input", (e) => { S.q = e.target.value; renderTable(); });
   $("secSel").addEventListener("change", (e) => { S.sec = e.target.value; renderTable(); });
   document.querySelectorAll(".seg button").forEach((b) => (b.onclick = () => { S.filter = b.dataset.f; document.querySelectorAll(".seg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); renderTable(); }));
@@ -653,6 +662,7 @@ Reply briefly for staff on a phone: short lines, "•" for list items, **bold** 
 
   // Coming back from Microsoft sign-in: finish it, then open the portal.
   (async () => {
+    await boot;
     if (CFG.microsoft?.clientId && /[?&](code|error)=/.test(location.search)) {
       const auth = window.MsAuth.create({ clientId: CFG.microsoft.clientId, tenant: CFG.microsoft.tenant });
       try { await auth.handleRedirect(); } catch (e) { S.pendingErr = e.message; }
