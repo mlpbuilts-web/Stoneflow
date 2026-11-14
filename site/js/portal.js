@@ -86,7 +86,7 @@
   function startDemo(bytes, name) { S.mode = "demo"; S.store = window.InventoryStores.demo(bytes, name); S.who = "Demo user"; start(); }
 
   async function start() {
-    $("gate").hidden = true; $("desk-wrap").hidden = false; $("pActions").hidden = false;
+    $("gate").hidden = true; $("desk-wrap").hidden = false; $("pActions").hidden = false; $("chatFab").hidden = false;
     const signedIn = !!S.auth?.signedIn?.();
     $("signOut").hidden = !signedIn; $("demoDownload").hidden = S.mode !== "demo";
     $("signIn").hidden = !(S.auth && !signedIn);
@@ -485,6 +485,8 @@ Reply briefly for staff on a phone: short lines, "•" for list items, **bold** 
       let hits = S.lots.filter((l) => (!code || normCode(l.lot) === code) && matches(l, ts));
       if (code && !hits.length) hits = S.lots.filter((l) => normCode(l.lot).includes(code) && matches(l, ts));
       const shown = hits.filter((l) => !only || l.stock > 0).sort((a, b) => freeOf(b) - freeOf(a));
+      const m = S.chat[S.chat.length - 1];
+      if (m && m.role === "assistant") m.lots = [...new Set([...(m.lots || []), ...shown.slice(0, 8).map((l) => l.id)])].slice(0, 8);
       return { lots_matched: hits.length, lots_in_stock: hits.filter((l) => l.stock > 0).length, total_in_stock: hits.reduce((t, l) => t + Math.max(0, l.stock), 0),
         total_free: hits.reduce((t, l) => t + freeOf(l), 0), showing: Math.min(shown.length, 40), lots: shown.slice(0, 40).map(lotView) };
     },
@@ -559,7 +561,9 @@ Reply briefly for staff on a phone: short lines, "•" for list items, **bold** 
     box.innerHTML = S.chat.map((m, i) => {
       if (m.role === "user") return `<div class="msg user"><div class="b">${esc(m.text)}</div></div>`;
       const acts = (m.acts || []).map((a, j) => `<div class="act ${a.undone ? "undone" : ""}"><span class="pill ${a.kind === "hold" ? "hold" : "out"}">${a.kind === "order" ? "Order" : a.kind === "sale" ? "Excel" : "Hold"}</span><span class="lbl">${esc(a.label)}</span>${a.kind === "order" ? `<button class="link" type="button" data-view-order="${esc(a.order)}">View</button>` : ""}<button class="link" type="button" data-undo="${i}:${j}" ${a.undone ? "disabled" : ""}>${a.undone ? (a.kind === "order" ? "Cancelled" : "Undone") : (a.kind === "order" ? "Cancel order" : "Undo")}</button></div>`).join("");
-      return `<div class="msg agent ${m.err ? "err" : ""}"><div class="b ${m.thinking && !m.text ? "thinking" : ""}">${m.thinking && !m.text ? "Checking the Excel file…" : fmtReply(m.text)}</div>${acts}</div>`;
+      const pics = !m.thinking && m.lots?.length ? `<div class="msg-lots">${m.lots.map((id) => S.lots.find((l) => l.id === id)).filter(Boolean).map((l) =>
+        `<button type="button" class="mini" data-lot-open="${esc(l.id)}"><span class="mini-ic" style="${esc(window.OSS ? window.OSS.swatch(l) : "")}" aria-hidden="true"></span><span class="mini-b"><b>${esc(l.name)}</b><span>${esc(l.lot || "")}${sizeOf(l) ? " · " + esc(sizeOf(l)) : ""}</span><span class="tn free">${freeOf(l)} free</span></span></button>`).join("")}</div>` : "";
+      return `<div class="msg agent ${m.err ? "err" : ""}"><div class="b ${m.thinking && !m.text ? "thinking" : ""}">${m.thinking && !m.text ? "Checking the inventory…" : fmtReply(m.text)}</div>${pics}${acts}</div>`;
     }).join("");
     box.scrollTop = box.scrollHeight;
   }
@@ -634,6 +638,8 @@ Reply briefly for staff on a phone: short lines, "•" for list items, **bold** 
   $("clearChat").onclick = () => { if (S.busy) S.ctl?.abort(); S.chat = []; renderMsgs(); };
   $("msgs").addEventListener("click", async (e) => {
     const chip = e.target.closest("[data-ask]"); if (chip) return send(chip.dataset.ask);
+    const mini = e.target.closest("[data-lot-open]");
+    if (mini) { if (matchMedia("(max-width: 900px)").matches) chatOpen(false); S.sel = null; openLot(mini.dataset.lotOpen); $("lotCard").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     const u = e.target.closest("[data-undo]"); if (!u) return;
     const [i, j] = u.dataset.undo.split(":").map(Number), a = S.chat[i]?.acts?.[j];
     if (!a || a.undone) return; u.disabled = true;
@@ -644,8 +650,11 @@ Reply briefly for staff on a phone: short lines, "•" for list items, **bold** 
   $("search").addEventListener("input", (e) => { S.q = e.target.value; renderTable(); });
   $("secSel").addEventListener("change", (e) => { S.sec = e.target.value; renderTable(); });
   document.querySelectorAll(".seg button").forEach((b) => (b.onclick = () => { S.filter = b.dataset.f; document.querySelectorAll(".seg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); renderTable(); }));
-  const setTab = (t) => { $("desk").dataset.tab = t; $("tabAgent").setAttribute("aria-selected", String(t === "agent")); $("tabInv").setAttribute("aria-selected", String(t === "inventory")); };
-  $("tabAgent").onclick = () => setTab("agent"); $("tabInv").onclick = () => setTab("inventory");
+  // The agent opens as a pop-up chat; the lots keep the full page.
+  const chatOpen = (on) => { $("chatPanel").hidden = !on; $("chatFab").setAttribute("aria-expanded", String(on)); $("chatFab").hidden = on; document.body.classList.toggle("chat-open", on); if (on) setTimeout(() => $("ask").focus(), 0); };
+  $("chatFab").onclick = () => chatOpen(true);
+  $("chatClose").onclick = () => chatOpen(false);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("chatPanel").hidden) chatOpen(false); });
   $("refreshBtn").onclick = () => load();
   $("sheetSel").onchange = (e) => load(e.target.value);
   $("signOut").onclick = () => { S.auth?.signOut(); location.reload(); };

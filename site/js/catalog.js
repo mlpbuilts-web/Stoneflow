@@ -84,7 +84,7 @@
     try {
       const { lots, at } = await inventory(force);
       S.lots = lots; $("catUpdated").textContent = "updated " + at.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); render();
-    } catch (e) { $("catGrid").innerHTML = `<p class="note-sm">${esc(e.message)} Please call us for availability.</p>`; $("catCount").textContent = ""; $("catUpdated").textContent = "not available"; }
+    } catch (e) { $("catGrid").innerHTML = `<p class="note-sm">${esc(e.message)} Please call us for availability.</p>`; $("catCount").textContent = ""; $("catUpdated").closest("span").innerHTML = "Inventory not available right now"; }
   }
   $("catRefresh").addEventListener("click", () => load(true));
   paint(); load(false);
