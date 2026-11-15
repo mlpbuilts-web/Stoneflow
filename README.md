@@ -1,6 +1,6 @@
 # Our Stone Studio: website + live inventory agent
 
-A public stone website (home, live slab catalog, Quartz, Granite, Trade, FAQ, Contact/quote) with a **Live Inventory** page and an AI agent.
+A public stone website (home, Full Slabs catalog, Quartz, Granite, Our Projects, Design Your Space, About Us, Contact/free consultation) with a **Live Inventory** page and an AI agent.
 All stock comes from one Excel file, **LIVE INVENTORY.xlsx**, in the owner's OneDrive.
 
 | Who | Sign-in | Can do |
@@ -29,7 +29,9 @@ Netlify functions (netlify/functions) ── Claude API key, staff list, owner's
 |---|---|
 | `site/index.html` | Home page + the **Live Inventory** page (opens at `/#staff`) |
 | `site/slabs.html` | Live slab catalog: search, filters, save, quote |
-| `site/quartz.html`, `granite.html`, `trade.html`, `faq.html`, `contact.html` | Content pages and the quote form |
+| `site/quartz.html`, `granite.html`, `projects.html`, `about.html`, `contact.html` | Content pages and the consultation form |
+| `site/design.html` + `js/design.js` | Design Your Space: try in-stock stones on a kitchen with cabinet and backsplash choices |
+| `site/js/projects.js` | Project gallery filter (Kitchens, Baths, Commercial, Other) |
 | `site/js/config.js` | **Your settings**: company details printed on sales orders (the app ID and emails live in Netlify) |
 | `site/js/site.js`, `catalog.js`, `home.js` | Public pages: live numbers, catalog (By stone / All slabs / Saved, Warm/Cool/Dark, minimum size), saved slabs, forms |
 | `site/js/portal.js` | Live Inventory page (lots as tiles), the pop-up "Ask the agent" chat and the agent's tools |
@@ -176,7 +178,7 @@ microsoft: { clientId: "", tenant: "consumers" },  // leave clientId empty: read
 excel: { sheet: "", ... },                         // empty = newest month sheet
 ```
 
-**Commit changes**. Company details print on sales orders. Also replace the `[bracketed]` placeholders in `contact.html` (street address) and `trade.html` / `faq.html` (trade and hold terms).
+**Commit changes**. Company details print on sales orders. Also replace the `[bracketed]` placeholders: street address (`contact.html`), your story (`about.html`), project photos (`projects.html`, home page) and real reviews (home page).
 
 ## Step 8: Deploy, then connect OneDrive (once)
 

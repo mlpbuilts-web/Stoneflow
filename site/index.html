@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-dark="charcoal">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -10,7 +10,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 132 132' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='4' y='4' width='124' height='124' rx='22' fill='%231F2326'/%3E%3Cpath d='M18 104 C 44 92, 52 70, 72 62 S 104 40, 116 22' fill='none' stroke='%23C39A5B' stroke-width='7' stroke-linecap='round'/%3E%3Cpath d='M60 70 C 66 84, 82 94, 98 98' fill='none' stroke='%23C39A5B' stroke-width='3.5' stroke-linecap='round' opacity='.75'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Jost:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/site.css">
 </head>
 <body>
@@ -18,12 +18,18 @@
   <div class="wrap">
     <a class="brand" href="/" aria-label="Our Stone Studio home" style="color:var(--ink)"><svg width="40" height="40" viewBox="0 0 132 132" aria-hidden="true"><rect x="4" y="4" width="124" height="124" rx="22" fill="currentColor"/><path d="M18 104 C 44 92, 52 70, 72 62 S 104 40, 116 22" fill="none" stroke="#C39A5B" stroke-width="7" stroke-linecap="round"/><path d="M60 70 C 66 84, 82 94, 98 98" fill="none" stroke="#C39A5B" stroke-width="3.5" stroke-linecap="round" opacity=".75"/></svg><span class="wm"><b id="brandName">Our Stone</b><span>Studio</span></span></a>
     <nav class="nav" aria-label="Main">
-      <a href="slabs.html">Slabs</a>
-      <a href="quartz.html" class="hide-sm">Quartz</a>
-      <a href="granite.html" class="hide-sm">Granite</a>
-      <a href="trade.html" class="hide-sm">Trade</a>
-      <a href="faq.html" class="hide-sm">FAQ</a>
+      <a href="slabs.html">Full Slabs</a>
+      <details class="dd hide-sm"><summary>Stone</summary><div class="dd-menu">
+        <a href="quartz.html">Quartz</a>
+        <a href="granite.html">Granite</a>
+        <a href="slabs.html?type=onyx">Quartz onyx</a>
+        <a href="slabs.html">All full slabs in stock</a>
+      </div></details>
+      <a href="projects.html" class="hide-sm">Our Projects</a>
+      <a href="design.html" class="hide-sm">Design Your Space</a>
+      <a href="about.html" class="hide-sm">About Us</a>
       <a href="contact.html">Contact</a>
+      <a class="hdr-phone" href="tel:+19999999999" aria-label="Call us at 999-999-9999"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1l-2.2 2.2Z"/></svg><span>999-999-9999</span></a>
       <a class="btn primary" href="#staff" id="staffLink">Live Inventory</a>
     </nav>
   </div>
@@ -31,37 +37,147 @@
 
 <!-- ============ PUBLIC HOME ============ -->
 <main id="home-view">
-  <div class="wrap">
-    <section class="hero">
-      <div>
-        <span class="eyebrow">Quartz · Granite · Onyx · Virginia</span>
-        <h1>Stone countertops, <em>chosen from real slabs.</em></h1>
-        <p>Browse the slabs in our yard right now, save the ones you love, and get a quote from Our Stone Studio. Our stock list updates live, so what you see is what's here.</p>
-        <div class="ctas"><a class="btn primary" href="slabs.html">Browse live slabs</a><a class="btn" href="contact.html">Get a quote</a></div>
-        <p class="hero-meta"><span>Open 7 am – 9 pm</span><span>Stock assistant in English &amp; Español</span></p>
+  <section class="h-hero">
+    <canvas id="heroSlab" width="1800" height="1000" aria-hidden="true"></canvas>
+    <div class="h-sheen" aria-hidden="true"></div>
+    <div class="wrap h-grid">
+      <div class="h-copy">
+        <h1>Countertops cut from slabs you can see today</h1>
+        <p>Every slab on this site is standing in our Virginia yard right now. Choose yours online, then we measure, fabricate and install.</p>
+        <div class="ctas"><a class="btn primary" href="slabs.html">Browse live slabs</a><a class="btn" href="contact.html">Book a free consultation</a></div>
       </div>
-      <div class="slab" aria-hidden="true"><canvas id="heroSlab" width="1016" height="512"></canvas><span class="tag"><span class="live-dot"></span>Calacatta style · in stock</span></div>
-    </section>
-    <div class="facts">
-      <div><b data-live="free">…</b><span>slabs available now</span></div>
-      <div><b data-live="colors">…</b><span>colors in stock</span></div>
+      <div class="h-scene">
+        <figure class="kitchen" aria-label="White kitchen with marble countertops and backsplash">
+          <!-- Hero photo: replace site/img/hero-kitchen.jpg to change it. -->
+          <img class="kitchen-photo" id="kitchenPhoto" src="img/hero-kitchen.jpg" alt="White kitchen with marble countertops, full-height marble backsplash and a marble waterfall island" width="1206" height="690" fetchpriority="high">
+          <svg viewBox="0 0 800 600" role="img" aria-label="Kitchen with marble countertops, a waterfall island, pendant lights and white cabinets">
+            <defs>
+              <pattern id="mbl" patternUnits="userSpaceOnUse" width="800" height="600"><image id="mblImg" x="0" y="0" width="800" height="600" preserveAspectRatio="xMidYMid slice"/></pattern>
+              <linearGradient id="kWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--k-wall1)"/><stop offset="1" style="stop-color:var(--k-wall2)"/></linearGradient>
+              <linearGradient id="kFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D2BC98"/><stop offset="1" stop-color="#B99E74"/></linearGradient>
+              <linearGradient id="kSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBFCF7"/><stop offset="1" stop-color="#E6EEE4"/></linearGradient>
+              <linearGradient id="kGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--k-cab1)"/><stop offset="1" style="stop-color:var(--k-cab2)"/></linearGradient>
+              <linearGradient id="kOak" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C9A877"/><stop offset="1" stop-color="#B8925F"/></linearGradient>
+              <radialGradient id="kGlow" cx=".5" cy=".2" r=".6"><stop offset="0" stop-color="#FFE7B0" stop-opacity=".75"/><stop offset="1" stop-color="#FFE7B0" stop-opacity="0"/></radialGradient>
+              <linearGradient id="kShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></linearGradient>
+            </defs>
+            <rect width="800" height="430" fill="url(#kWall)"/>
+            <!-- window -->
+            <rect x="300" y="36" width="200" height="150" rx="4" fill="url(#kSky)" stroke="#CBD2C4" stroke-width="6"/>
+            <path d="M400 36v150M300 111h200" stroke="#CBD2C4" stroke-width="4"/>
+            <path d="M320 186c20-40 40-52 58-60M360 186c12-22 26-34 44-40" stroke="#B9C7B3" stroke-width="2" fill="none" opacity=".7"/>
+            <!-- open oak shelves -->
+            <g fill="url(#kOak)"><rect x="60" y="92" width="190" height="9" rx="2"/><rect x="60" y="150" width="190" height="9" rx="2"/><rect x="550" y="92" width="190" height="9" rx="2"/><rect x="550" y="150" width="190" height="9" rx="2"/></g>
+            <g fill="#F7F5EF" stroke="#D9D5CA"><path d="M80 92h34l-5-18H85z"/><circle cx="140" cy="80" r="12"/><rect x="170" y="62" width="14" height="30" rx="3"/><path d="M590 150h40l-6-22h-28z"/><rect x="660" y="128" width="12" height="22" rx="3"/><rect x="680" y="120" width="12" height="30" rx="3"/></g>
+            <g fill="#6E8F63"><path d="M215 92c-6-16 2-30 12-34-2 12 0 22-2 34zM228 92c4-14 14-22 24-22-8 8-12 14-16 22z"/><path d="M200 150c-4-12 4-24 12-26-2 10 0 18-2 26zM700 92c-6-16 2-30 12-34-2 12 0 22-2 34z"/></g>
+            <g fill="#C9B79A"><circle cx="595" cy="82" r="10"/><circle cx="96" cy="140" r="9"/><rect x="120" y="128" width="40" height="22" rx="4" fill="#EDE9DF"/></g>
+            <!-- hood -->
+            <path d="M352 36h96v54l34 70H318l34-70z" fill="#F1F2EC" stroke="#D6D9CF"/>
+            <rect x="316" y="158" width="168" height="8" rx="2" fill="#E3E5DD"/>
+            <!-- marble backsplash + counter -->
+            <rect x="40" y="186" width="720" height="116" fill="url(#mbl)"/>
+            <rect x="40" y="186" width="720" height="116" fill="url(#kShade)" opacity=".5"/>
+            <rect x="30" y="300" width="740" height="16" rx="2" fill="url(#mbl)"/>
+            <rect x="30" y="314" width="740" height="4" fill="#000" opacity=".12"/>
+            <!-- faucet + sink -->
+            <path d="M560 300v-46a14 14 0 0 1 28 0v8" stroke="#B08A4E" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <!-- plant on counter -->
+            <path d="M92 300h36l-4-28H96z" fill="#E9E4D8" stroke="#D2CCBE"/>
+            <g fill="#5F8457"><path d="M110 272c-14-20-10-40 4-48 0 18 2 30-4 48z"/><path d="M112 272c8-22 22-30 34-30-10 10-18 18-34 30z"/><path d="M108 272c-10-14-26-18-34-14 12 4 20 8 34 14z"/></g>
+            <!-- base cabinets -->
+            <rect x="40" y="318" width="720" height="112" fill="url(#kGreen)"/>
+            <g style="stroke:var(--k-cab-line)" stroke-width="2" fill="none"><path d="M130 322v104M220 322v104M310 322v104M490 322v104M580 322v104M670 322v104"/></g>
+            <g fill="#C29A5B"><rect x="110" y="340" width="14" height="3" rx="1.5"/><rect x="136" y="340" width="14" height="3" rx="1.5"/><rect x="200" y="340" width="14" height="3" rx="1.5"/><rect x="226" y="340" width="14" height="3" rx="1.5"/><rect x="290" y="340" width="14" height="3" rx="1.5"/><rect x="496" y="340" width="14" height="3" rx="1.5"/><rect x="560" y="340" width="14" height="3" rx="1.5"/><rect x="586" y="340" width="14" height="3" rx="1.5"/><rect x="650" y="340" width="14" height="3" rx="1.5"/><rect x="676" y="340" width="14" height="3" rx="1.5"/></g>
+            <!-- range -->
+            <rect x="320" y="318" width="160" height="112" fill="#3A3D40"/>
+            <rect x="334" y="352" width="132" height="64" rx="4" fill="#24272A" stroke="#55595D"/>
+            <rect x="346" y="342" width="108" height="4" rx="2" fill="#B9BDC0"/>
+            <g fill="#B9BDC0"><circle cx="346" cy="328" r="4"/><circle cx="370" cy="328" r="4"/><circle cx="430" cy="328" r="4"/><circle cx="454" cy="328" r="4"/></g>
+            <!-- floor -->
+            <rect y="430" width="800" height="170" fill="url(#kFloor)"/>
+            <g stroke="#A88B60" stroke-width="1.5" opacity=".55"><path d="M0 462h800M0 500h800M0 544h800M120 430v32M330 462v38M560 430v32M210 500v44M470 500v44M700 462v38M90 544v56M640 544v56"/></g>
+            <!-- pendant lights -->
+            <g><path d="M300 0v188M500 0v188" stroke="#3B3B36" stroke-width="2"/>
+              <ellipse cx="300" cy="260" rx="70" ry="80" fill="url(#kGlow)"/><ellipse cx="500" cy="260" rx="70" ry="80" fill="url(#kGlow)"/>
+              <path d="M278 214a22 26 0 0 1 44 0z" fill="#B08A4E"/><path d="M478 214a22 26 0 0 1 44 0z" fill="#B08A4E"/>
+              <ellipse cx="300" cy="214" rx="22" ry="4" fill="#FFF3D6"/><ellipse cx="500" cy="214" rx="22" ry="4" fill="#FFF3D6"/></g>
+            <!-- island with waterfall marble -->
+            <ellipse cx="400" cy="574" rx="300" ry="16" fill="#000" opacity=".12"/>
+            <rect x="170" y="446" width="460" height="120" fill="url(#kGreen)"/>
+            <g style="stroke:var(--k-cab-line)" stroke-width="2"><path d="M323 450v116M477 450v116"/></g>
+            <rect x="136" y="430" width="508" height="18" rx="2" fill="url(#mbl)"/>
+            <rect x="136" y="430" width="22" height="138" fill="url(#mbl)"/><rect x="622" y="430" width="22" height="138" fill="url(#mbl)"/>
+            <rect x="136" y="446" width="508" height="4" fill="#000" opacity=".14"/>
+            <!-- fruit bowl -->
+            <path d="M372 430c0-14 56-14 56 0z" fill="#EFEBE2" stroke="#D3CCBD"/>
+            <g fill="#D9A441"><circle cx="390" cy="418" r="7"/><circle cx="404" cy="414" r="7"/></g><circle cx="415" cy="420" r="6" fill="#8DAA5B"/>
+            <!-- stools -->
+            <g fill="#2B2A27"><rect x="236" y="486" width="60" height="9" rx="4"/><rect x="370" y="486" width="60" height="9" rx="4"/><rect x="504" y="486" width="60" height="9" rx="4"/></g>
+            <g stroke="#B08A4E" stroke-width="3"><path d="M244 495l-8 96M288 495l8 96M378 495l-8 96M422 495l8 96M512 495l-8 96M556 495l8 96M240 548h56M374 548h56M508 548h56"/></g>
+          </svg>
+        </figure>
+      <aside class="yardtag on-scene" aria-label="Live stock">
+        <span class="hole" aria-hidden="true"></span>
+        <p class="yt-head">In the yard right now</p>
+        <p class="yt-num"><b data-live="free">…</b> slabs ready to sell</p>
+        <p class="yt-sub"><b data-live="colors">…</b> colors of quartz, granite and onyx</p>
+        <p class="yt-foot">Open 7 am to 9 pm. Ask our stock assistant in English or Español.</p>
+      </aside>
+      </div>
     </div>
+  </section>
 
-    <section class="block" id="collections">
-      <div class="block-h"><h2>Our stone</h2><p>Every lot is a batch of matched slabs from one block. Ask for the lot number so your whole kitchen matches.</p></div>
-      <div class="coll" id="collGrid"></div>
+  <div class="wrap">
+    <section class="block rack" aria-labelledby="rackTitle">
+      <div class="block-h"><h2 id="rackTitle">Fresh on the racks</h2><a class="textlink" href="slabs.html">See every slab</a></div>
+      <div class="rack-row" id="rackRow"><p class="note-sm">Loading what's in the yard…</p></div>
     </section>
 
-    <section class="block" id="process">
-      <div class="block-h"><h2>How it works</h2><p>From browsing to your slabs being held, without guesswork about what's in stock.</p></div>
-      <div class="steps">
-        <div><h3>Pick your slabs</h3><p>Browse live stock online or ask our assistant, in English or Spanish, by voice or text.</p></div>
-        <div><h3>Get a quote</h3><p>Send the slabs you saved and a few details about your project. We reply within one business day.</p></div>
-        <div><h3>We hold them for you</h3><p>Once you decide, we hold your slabs under your name and send a written sales order.</p></div>
+    <section class="block" id="collections" aria-labelledby="stoneTitle">
+      <div class="block-h"><h2 id="stoneTitle">Our stone</h2><p>Each lot is a set of matched slabs cut from one block, so a whole kitchen can share the same veining.</p></div>
+      <div class="stones" id="collGrid"></div>
+    </section>
+
+    <section class="block" id="process" aria-labelledby="procTitle">
+      <div class="block-h"><h2 id="procTitle">From slab to countertop</h2></div>
+      <ol class="path">
+        <li><span class="path-ic"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H9l-5 4z"/></svg></span><h3>Free consultation</h3><p>Tell us about your kitchen or bath and pick slabs from live stock, online or in the yard.</p></li>
+        <li><span class="path-ic"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="1"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/></svg></span><h3>Estimate</h3><p>We measure your space and send a written quote for the slabs you chose.</p></li>
+        <li><span class="path-ic"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l7-7M14 4l6 6-8 8-6-6z"/></svg></span><h3>Fabrication</h3><p>Your slabs are cut, edged and finished to fit your layout.</p></li>
+        <li><span class="path-ic"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg></span><h3>Installation</h3><p>Our crew installs your countertops and leaves the space clean.</p></li>
+      </ol>
+    </section>
+  </div>
+
+  <section class="consult" aria-labelledby="consultTitle">
+    <div class="wrap consult-in">
+      <div><h2 id="consultTitle">Book a free consultation</h2><p>Bring a photo or a rough sketch of your space. We'll walk you through the slabs that fit it and what they cost.</p></div>
+      <div class="band-ctas"><a class="btn light" href="contact.html">Request a consultation</a><a class="btn outline-light" href="tel:+19999999999">Call 999-999-9999</a></div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="block" id="work">
+      <div class="block-h"><h2>Our work</h2><p>Recent kitchens and baths. [Add your project photos here]</p></div>
+      <div class="gallery">
+        <figure><div class="g-ph" data-tone="warm"></div><figcaption>[Kitchen, stone name]</figcaption></figure>
+        <figure><div class="g-ph" data-tone="cool"></div><figcaption>[Island, stone name]</figcaption></figure>
+        <figure><div class="g-ph" data-tone="dark"></div><figcaption>[Bathroom vanity, stone name]</figcaption></figure>
+        <figure><div class="g-ph" data-tone="cool"></div><figcaption>[Kitchen, stone name]</figcaption></figure>
+        <figure><div class="g-ph" data-tone="warm"></div><figcaption>[Bar top, stone name]</figcaption></figure>
       </div>
     </section>
 
-    <section class="block"><div class="band"><div><h2>Ask about any slab</h2><p>Our stock assistant checks live availability in seconds. Try "Is Zircon available?" or "¿Hay Calacatta jumbo?"</p></div><a class="btn" href="#staff">Ask the assistant</a></div></section>
+    <section class="block" id="reviews">
+      <div class="block-h"><h2>What customers say</h2><p>[Paste real reviews from Google or your customers. Never made-up ones.]</p></div>
+      <div class="reviews">
+        <blockquote><div class="stars" aria-label="5 out of 5 stars">★★★★★</div><p>[Customer review text]</p><footer>[First name, town]</footer></blockquote>
+        <blockquote><div class="stars" aria-label="5 out of 5 stars">★★★★★</div><p>[Customer review text]</p><footer>[First name, town]</footer></blockquote>
+        <blockquote><div class="stars" aria-label="5 out of 5 stars">★★★★★</div><p>[Customer review text]</p><footer>[First name, town]</footer></blockquote>
+      </div>
+    </section>
+
+    <section class="block"><div class="ask-strip"><div><h2>Ask about any slab</h2><p>Our stock assistant checks live availability in seconds. Try “Is Zircon available?” or “¿Hay Calacatta jumbo?”</p></div><a class="btn primary" href="#staff">Ask the assistant</a></div></section>
   </div>
 </main>
 
@@ -136,9 +252,9 @@
 </main>
 
 <footer><div class="wrap"><div class="cols">
-  <div><h4>Our Stone Studio</h4><p style="margin:0">Quartz, granite and quartz onyx slabs in Virginia.<br>Hours: 7 am – 9 pm<br><a href="tel:999-999-9999">999-999-9999</a> · <a href="mailto:outstonestudio@gmail.com">outstonestudio@gmail.com</a></p></div>
-  <div><h4>Stone</h4><ul><li><a href="slabs.html">Live slabs</a></li><li><a href="quartz.html">Quartz</a></li><li><a href="granite.html">Granite</a></li><li><a href="/#staff">Ask the stock assistant</a></li></ul></div>
-  <div><h4>Company</h4><ul><li><a href="trade.html">Trade program</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact &amp; quote</a></li></ul></div>
+  <div><h4>Our Stone Studio</h4><p style="margin:0">Quartz, granite and quartz onyx slabs in Virginia.<br>Open 7 am to 9 pm<br><a href="tel:+19999999999">999-999-9999</a><br><a href="mailto:outstonestudio@gmail.com">outstonestudio@gmail.com</a></p></div>
+  <div><h4>Stone</h4><ul><li><a href="slabs.html">Full slabs in stock</a></li><li><a href="quartz.html">Quartz</a></li><li><a href="granite.html">Granite</a></li><li><a href="/#staff">Ask the stock assistant</a></li></ul></div>
+  <div><h4>Company</h4><ul><li><a href="projects.html">Our projects</a></li><li><a href="design.html">Design your space</a></li><li><a href="about.html">About us</a></li><li><a href="contact.html">Contact &amp; free consultation</a></li></ul></div>
 </div><p style="width:100%;margin:16px 0 0">© <span data-year></span> Our Stone Studio. Stock levels update live from our inventory.</p></div></footer>
 <div class="busy" id="busy" hidden></div>
 

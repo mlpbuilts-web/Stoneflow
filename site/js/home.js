@@ -46,14 +46,42 @@
   }
 
   const COLLECTIONS = [
-    { kind: "calacattaGold", title: "Quartz", href: "quartz.html", spec: "Calacatta, Carrara and printed full-body · regular, jumbo and super jumbo" },
-    { kind: "granite", title: "Granite", href: "granite.html", spec: "Natural stone · polished and leathered" },
-    { kind: "onyx", title: "Quartz onyx", href: "slabs.html?type=onyx", spec: "Warm, translucent statement slabs" },
+    { kind: "calacattaGold", title: "Quartz", href: "quartz.html", spec: "Calacatta and Carrara looks, printed full-body, regular to super jumbo sizes", size: "big", seed: 101 },
+    { kind: "granite", title: "Granite", href: "granite.html", spec: "Natural stone, polished or leathered", size: "", seed: 118 },
+    { kind: "onyx", title: "Quartz onyx", href: "slabs.html?type=onyx", spec: "Warm, translucent statement slabs", size: "", seed: 135 },
   ];
-  $("collGrid").innerHTML = COLLECTIONS.map((c, i) => `<a class="card-link" href="${c.href}"><article><div class="sw"><canvas width="640" height="360" data-kind="${c.kind}" data-seed="${101 + i * 17}" aria-hidden="true"></canvas></div>
-    <div class="body"><h3>${esc(c.title)}</h3><span class="spec">${esc(c.spec)}</span></div></article></a>`).join("");
+  $("collGrid").innerHTML = COLLECTIONS.map((c) => `<a class="stone ${c.size}" href="${c.href}">
+    <canvas width="${c.size ? 1200 : 900}" height="${c.size ? 1000 : 520}" data-kind="${c.kind}" data-seed="${c.seed}" aria-hidden="true"></canvas>
+    <span class="stone-cap"><b>${esc(c.title)}</b><span>${esc(c.spec)}</span></span></a>`).join("");
   document.querySelectorAll("canvas[data-kind]").forEach((cv) => drawStone(cv, cv.dataset.kind, Number(cv.dataset.seed)));
   drawStone($("heroSlab"), "calacattaGold", 7);
+  // Hero photo: if it can't load, fall back to the drawn kitchen underneath.
+  const kp = document.getElementById("kitchenPhoto");
+  if (kp) {
+    const fail = () => { kp.remove(); };
+    if (kp.complete && !kp.naturalWidth) fail(); else kp.addEventListener("error", fail);
+  }
+  // The kitchen's countertops use a marble texture drawn the same way.
+  const mbl = document.getElementById("mblImg");
+  if (mbl) { const cv = document.createElement("canvas"); cv.width = 1600; cv.height = 1200; drawStone(cv, "calacattaGold", 23); mbl.setAttribute("href", cv.toDataURL("image/jpeg", 0.86)); }
+
+  /* ---------- "Fresh on the racks": four real lots from the live inventory, shown as yard tags ---------- */
+  (async () => {
+    const box = $("rackRow"); if (!box || !window.OSS) return;
+    try {
+      const { lots } = await window.OSS.inventory();
+      const seen = new Set(), pick = [];
+      for (const l of lots.filter((x) => x.free > 0 && x.type !== "other").sort((x, y) => y.free - x.free)) {
+        if (seen.has(l.title) || seen.has(l.type + pick.filter((p) => p.type === l.type).length)) continue;
+        if (pick.filter((p) => p.type === l.type).length >= 2) continue;
+        seen.add(l.title); pick.push(l); if (pick.length === 4) break;
+      }
+      box.innerHTML = pick.map((l) => `<a class="ytag" href="slabs.html?q=${encodeURIComponent(l.title)}">
+        <span class="ytag-sw" style="${esc(window.OSS.swatch(l))}" aria-hidden="true"><span class="hole"></span></span>
+        <span class="ytag-b"><b>${esc(l.title)}</b><span>Lot ${esc(l.lot || "on request")}${l.L && l.H ? `, ${esc(l.L)} × ${esc(l.H)} in` : ""}</span>
+        <span class="ytag-n">${l.free} slab${l.free === 1 ? "" : "s"} ready</span></span></a>`).join("");
+    } catch { box.innerHTML = `<p class="note-sm">Stock is updating. <a href="slabs.html">See the slab list</a>.</p>`; }
+  })();
 
   /* ---------- routing: #staff opens the portal, everything else is the public site ---------- */
   function route() {

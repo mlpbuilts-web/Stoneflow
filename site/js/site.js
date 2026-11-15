@@ -37,7 +37,7 @@
     else if (/BROWN|FANTASY|CREMA|BEIGE|BIEGE|TAJ|SAND|MUSK|NECTAR|CHAMPAGNE|GOLD|SEVELIA|SIMA/.test(n)) { base = ["#EDE3D2", "#D5C3A5"]; vein = "rgba(150,115,70,.45)"; }
     else if (/BLUE|AQUA|BAHAMAS|NEPTUNE|WAVES|RAIN/.test(n)) { base = ["#D7E1E8", "#A9BCC9"]; vein = "rgba(60,80,100,.35)"; }
     else if (/RED/.test(n)) { base = ["#B5483F", "#8C2F28"]; vein = "rgba(255,230,220,.3)"; }
-    if (t === "granite" && !/WHITE/.test(n)) return `background: radial-gradient(circle at 20% 30%, rgba(255,255,255,.18) 0 2px, transparent 3px) 0 0/14px 14px, radial-gradient(circle at 70% 60%, rgba(0,0,0,.25) 0 2px, transparent 3px) 0 0/11px 11px, linear-gradient(135deg, ${base[0]}, ${base[1]})`;
+    if (t === "granite" && !/WHITE/.test(n)) return `background: radial-gradient(circle at 30% 40%, rgba(255,255,255,.22) 0 .8px, transparent 1.6px) 0 0/7px 7px, radial-gradient(circle at 70% 20%, rgba(0,0,0,.28) 0 1px, transparent 1.8px) 3px 2px/9px 9px, radial-gradient(circle at 50% 50%, rgba(255,255,255,.12) 0 1.2px, transparent 2.2px) 5px 6px/13px 11px, radial-gradient(circle at 20% 80%, rgba(0,0,0,.2) 0 1.4px, transparent 2.4px) 1px 4px/17px 15px, linear-gradient(135deg, ${base[0]}, ${base[1]})`;
     if (t === "onyx") return `background: repeating-linear-gradient(170deg, rgba(255,245,220,.35) 0 6px, transparent 6px 22px), linear-gradient(135deg, #E3C48E, #C99A57)`;
     // vary the veins by name so each stone looks a little different
     let h = 0; for (const c of n) h = (h * 31 + c.charCodeAt(0)) >>> 0;
@@ -125,6 +125,9 @@
     });
   }
 
+  // Close the Stone menu when clicking elsewhere or pressing Esc.
+  document.addEventListener("click", (e) => { document.querySelectorAll("details.dd[open]").forEach((d) => { if (!d.contains(e.target)) d.open = false; }); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") document.querySelectorAll("details.dd[open]").forEach((d) => { d.open = false; }); });
   document.querySelectorAll("[data-year]").forEach((el) => { el.textContent = new Date().getFullYear(); });
   paintSaved(); wireForms(); fillLive(); fillTop();
   window.OSS = { inventory, swatch, typeOf, toneOf, TYPE_LABEL, saved, esc, niceName };

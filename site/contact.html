@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-dark="charcoal">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -10,7 +10,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 132 132' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='4' y='4' width='124' height='124' rx='22' fill='%231F2326'/%3E%3Cpath d='M18 104 C 44 92, 52 70, 72 62 S 104 40, 116 22' fill='none' stroke='%23C39A5B' stroke-width='7' stroke-linecap='round'/%3E%3Cpath d='M60 70 C 66 84, 82 94, 98 98' fill='none' stroke='%23C39A5B' stroke-width='3.5' stroke-linecap='round' opacity='.75'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Jost:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/site.css">
 </head>
 <body>
@@ -18,12 +18,18 @@
   <div class="wrap">
     <a class="brand" href="/" aria-label="Our Stone Studio home" style="color:var(--ink)"><svg width="40" height="40" viewBox="0 0 132 132" aria-hidden="true"><rect x="4" y="4" width="124" height="124" rx="22" fill="currentColor"/><path d="M18 104 C 44 92, 52 70, 72 62 S 104 40, 116 22" fill="none" stroke="#C39A5B" stroke-width="7" stroke-linecap="round"/><path d="M60 70 C 66 84, 82 94, 98 98" fill="none" stroke="#C39A5B" stroke-width="3.5" stroke-linecap="round" opacity=".75"/></svg><span class="wm"><b id="brandName">Our Stone</b><span>Studio</span></span></a>
     <nav class="nav" aria-label="Main">
-      <a href="slabs.html">Slabs</a>
-      <a href="quartz.html" class="hide-sm">Quartz</a>
-      <a href="granite.html" class="hide-sm">Granite</a>
-      <a href="trade.html" class="hide-sm">Trade</a>
-      <a href="faq.html" class="hide-sm">FAQ</a>
+      <a href="slabs.html">Full Slabs</a>
+      <details class="dd hide-sm"><summary>Stone</summary><div class="dd-menu">
+        <a href="quartz.html">Quartz</a>
+        <a href="granite.html">Granite</a>
+        <a href="slabs.html?type=onyx">Quartz onyx</a>
+        <a href="slabs.html">All full slabs in stock</a>
+      </div></details>
+      <a href="projects.html" class="hide-sm">Our Projects</a>
+      <a href="design.html" class="hide-sm">Design Your Space</a>
+      <a href="about.html" class="hide-sm">About Us</a>
       <a href="contact.html" aria-current="page">Contact</a>
+      <a class="hdr-phone" href="tel:+19999999999" aria-label="Call us at 999-999-9999"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1l-2.2 2.2Z"/></svg><span>999-999-9999</span></a>
       <a class="btn primary" href="/#staff">Live Inventory</a>
     </nav>
   </div>
@@ -31,7 +37,7 @@
 <main>
 <div class="wrap">
 
-<section class="page-h"><span class="eyebrow">Contact</span><h1>Get a quote</h1><p>Tell us about your project and the slabs you like. We'll reply within one business day.</p></section>
+<section class="page-h"><span class="eyebrow">Contact</span><h1>Free consultation &amp; quote</h1><p>Tell us about your project and the slabs you like, or call <a href="tel:+19999999999">999-999-9999</a>. We'll reply within one business day.</p></section>
 <section class="block"><div class="visit">
   <dl>
     <dt>Hours</dt><dd>7 am – 9 pm</dd>
@@ -54,15 +60,15 @@
   <div class="field"><label for="qSlabs">Slabs or colors you like</label><input id="qSlabs" name="slabs" placeholder="e.g. IQ466 Zircon, or a white quartz with grey veins"></div>
   <div class="field"><label for="qMsg">About your project</label><textarea id="qMsg" name="message" rows="4" placeholder="Kitchen, bathroom, island… rough size, timeline"></textarea></div>
   <input type="hidden" name="page" value="">
-  <div><button class="btn primary" type="submit">Request a quote</button> <span class="note-sm" data-status role="status"></span></div>
+  <div><button class="btn primary" type="submit">Request a free consultation</button> <span class="note-sm" data-status role="status"></span></div>
 </form>
 </div></section>
 </div>
 </main>
 <footer><div class="wrap"><div class="cols">
-  <div><h4>Our Stone Studio</h4><p style="margin:0">Quartz, granite and quartz onyx slabs in Virginia.<br>Hours: 7 am – 9 pm<br><a href="tel:999-999-9999">999-999-9999</a> · <a href="mailto:outstonestudio@gmail.com">outstonestudio@gmail.com</a></p></div>
-  <div><h4>Stone</h4><ul><li><a href="slabs.html">Live slabs</a></li><li><a href="quartz.html">Quartz</a></li><li><a href="granite.html">Granite</a></li><li><a href="/#staff">Ask the stock assistant</a></li></ul></div>
-  <div><h4>Company</h4><ul><li><a href="trade.html">Trade program</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact &amp; quote</a></li></ul></div>
+  <div><h4>Our Stone Studio</h4><p style="margin:0">Quartz, granite and quartz onyx slabs in Virginia.<br>Open 7 am to 9 pm<br><a href="tel:+19999999999">999-999-9999</a><br><a href="mailto:outstonestudio@gmail.com">outstonestudio@gmail.com</a></p></div>
+  <div><h4>Stone</h4><ul><li><a href="slabs.html">Full slabs in stock</a></li><li><a href="quartz.html">Quartz</a></li><li><a href="granite.html">Granite</a></li><li><a href="/#staff">Ask the stock assistant</a></li></ul></div>
+  <div><h4>Company</h4><ul><li><a href="projects.html">Our projects</a></li><li><a href="design.html">Design your space</a></li><li><a href="about.html">About us</a></li><li><a href="contact.html">Contact &amp; free consultation</a></li></ul></div>
 </div><p style="width:100%;margin:16px 0 0">© <span data-year></span> Our Stone Studio. Stock levels update live from our inventory.</p></div></footer>
 <script src="js/config.js"></script>
 <script src="js/site.js"></script>
