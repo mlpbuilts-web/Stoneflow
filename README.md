@@ -259,3 +259,20 @@ Keep the Excel file **closed in desktop Excel** while testing saves.
 | Domain (optional) | ~$1–2 |
 | Claude (Haiku 4.5), about 1–1.5¢ per question | ~$5–45 |
 | OneDrive, Azure app, Netlify Forms (low volume) | $0 |
+
+## OneDrive stays connected (keep-alive)
+
+`netlify/functions/keepalive.mjs` runs once a day on Netlify's schedule and renews the owner's OneDrive
+sign-in, so it never sits unused long enough for Microsoft to expire it. The owner only has to open
+`/api/connect` again if:
+- the Azure app changes (a new `MS_CLIENT_ID`), or
+- the owner changes their Microsoft password or removes the app's access in their Microsoft account.
+
+If `MS_CLIENT_SECRET` expires in Azure, the staff page says so: make a new secret, put it in Netlify, redeploy.
+Visitors never see these technical messages; they're asked to call instead.
+
+## Design Your Space photo
+
+`site/img/design-kitchen.jpg` is re-colored in the browser. The areas (cabinets, backsplash, counters,
+island) are drawn as boxes in `site/js/design.js` (`AREAS`), in photo pixels. If you swap the photo for a
+different kitchen, those boxes need redrawing for the new picture.

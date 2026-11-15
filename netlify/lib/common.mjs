@@ -46,13 +46,19 @@ export async function ownerToken() {
   if (ownerAccess && ownerAccess.exp > Date.now() + 60_000) return ownerAccess.token;
   const saved = await kvGet("owner");
   if (!saved?.refresh_token) throw fail("The inventory isn't connected to OneDrive yet. The owner needs to open /api/connect once.", 503, { code: "not_connected" });
+  if (saved.clientId && saved.clientId !== env("MS_CLIENT_ID"))
+    throw fail("The Azure app (MS_CLIENT_ID) changed since OneDrive was connected. The owner needs to open /api/connect once to connect it to the new app.", 503, { code: "not_connected" });
   let d;
   try { d = await tokenRequest({ grant_type: "refresh_token", refresh_token: saved.refresh_token }); }
   catch (e) {
-    if (e.code === "invalid_grant") throw fail("The OneDrive connection expired. The owner needs to open /api/connect again.", 503, { code: "not_connected" });
+    console.error("OneDrive token refresh failed:", e.code, e.message);
+    if (e.code === "invalid_grant" || e.code === "unauthorized_client")
+      throw fail(`Microsoft stopped accepting the saved OneDrive sign-in (${e.message}). The owner needs to open /api/connect once.`, 503, { code: "not_connected" });
+    if (e.code === "invalid_client")
+      throw fail("Microsoft rejected the app secret. Check MS_CLIENT_SECRET in Netlify (it may have expired in Azure), then redeploy.", 503, { code: "bad_secret" });
     throw e;
   }
-  if (d.refresh_token && d.refresh_token !== saved.refresh_token) await kvSet("owner", { ...saved, refresh_token: d.refresh_token, refreshed: new Date().toISOString() });
+  if (d.refresh_token) await kvSet("owner", { ...saved, refresh_token: d.refresh_token, clientId: env("MS_CLIENT_ID"), refreshed: new Date().toISOString() });
   ownerAccess = { token: d.access_token, exp: Date.now() + (Number(d.expires_in) || 3600) * 1000 };
   return ownerAccess.token;
 }

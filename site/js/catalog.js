@@ -4,7 +4,7 @@
   const { inventory, swatch, TYPE_LABEL, saved, esc } = window.OSS;
   const $ = (id) => document.getElementById(id);
   const q = new URLSearchParams(location.search);
-  const S = { lots: [], text: q.get("q") || "", type: q.get("type") || "all", tones: new Set(), minL: "", minW: "",
+  const S = { lots: [], text: q.get("q") || "", type: ["quartz", "granite"].includes(q.get("type")) ? q.get("type") : "all", tones: new Set(), minL: "", minW: "",
     view: q.get("saved") === "1" ? "saved" : (q.get("q") ? "pieces" : "stone") };
 
   const toks = (s) => String(s || "").toLowerCase().replace(/(\d)\s*[x×*]\s*(\d)/g, "$1 $2").split(/[\s,]+/).filter(Boolean);
@@ -66,8 +66,6 @@
 
   $("catSearch").value = S.text;
   $("catSearch").addEventListener("input", (e) => { S.text = e.target.value; render(); });
-  $("minL").addEventListener("input", (e) => { S.minL = e.target.value; render(); });
-  $("minW").addEventListener("input", (e) => { S.minW = e.target.value; render(); });
   $("viewSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { S.view = b.dataset.view; if (S.view === "stone") { S.text = ""; $("catSearch").value = ""; } paint(); render(); } });
   $("typeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { S.type = b.dataset.type; paint(); render(); } });
   $("toneSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { const t = b.dataset.tone; S.tones.has(t) ? S.tones.delete(t) : S.tones.add(t); paint(); render(); } });
@@ -84,7 +82,11 @@
     try {
       const { lots, at } = await inventory(force);
       S.lots = lots; $("catUpdated").textContent = "updated " + at.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); render();
-    } catch (e) { $("catGrid").innerHTML = `<p class="note-sm">${esc(e.message)} Please call us for availability.</p>`; $("catCount").textContent = ""; $("catUpdated").closest("span").innerHTML = "Inventory not available right now"; }
+    } catch (e) {
+      console.warn("inventory:", e.message);   // the technical reason stays in the console, not on the page
+      $("catGrid").innerHTML = `<p class="note-sm">Our live stock list is updating. Please <a href="tel:+19999999999">call 999-999-9999</a> or <a href="contact.html">send us a message</a> for availability.</p>`;
+      $("catCount").textContent = ""; $("catStatus").innerHTML = `<span class="live-dot off"></span>Live stock list unavailable right now`;
+    }
   }
   $("catRefresh").addEventListener("click", () => load(true));
   paint(); load(false);

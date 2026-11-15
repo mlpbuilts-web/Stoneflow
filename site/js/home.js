@@ -48,7 +48,6 @@
   const COLLECTIONS = [
     { kind: "calacattaGold", title: "Quartz", href: "quartz.html", spec: "Calacatta and Carrara looks, printed full-body, regular to super jumbo sizes", size: "big", seed: 101 },
     { kind: "granite", title: "Granite", href: "granite.html", spec: "Natural stone, polished or leathered", size: "", seed: 118 },
-    { kind: "onyx", title: "Quartz onyx", href: "slabs.html?type=onyx", spec: "Warm, translucent statement slabs", size: "", seed: 135 },
   ];
   $("collGrid").innerHTML = COLLECTIONS.map((c) => `<a class="stone ${c.size}" href="${c.href}">
     <canvas width="${c.size ? 1200 : 900}" height="${c.size ? 1000 : 520}" data-kind="${c.kind}" data-seed="${c.seed}" aria-hidden="true"></canvas>

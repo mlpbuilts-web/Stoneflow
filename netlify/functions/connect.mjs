@@ -37,7 +37,7 @@ export default async (req) => {
     return page("Wrong account", `<p>You signed in as <b>${esc(got[0] || "unknown")}</b>, but only the owner (<b>${esc(env("OWNER_EMAIL"))}</b>) can connect OneDrive.</p><p><a href="/api/connect">Sign in again</a></p>`, 403);
   if (!tok.refresh_token) return page("Not connected", `<p>Microsoft didn't return offline access. Check the app's API permissions include <b>offline_access</b>, then <a href="/api/connect">try again</a>.</p>`, 400);
 
-  await kvSet("owner", { refresh_token: tok.refresh_token, email: got[0], connected: new Date().toISOString() });
+  await kvSet("owner", { refresh_token: tok.refresh_token, email: got[0], clientId: env("MS_CLIENT_ID"), connected: new Date().toISOString() });
   clearOwnerCache();
   return new Response(null, { status: 302, headers: { location: "/#staff", "set-cookie": "sf_connect=; Path=/api/connect; Max-Age=0; HttpOnly; Secure; SameSite=Lax", "cache-control": "no-store" } });
 };

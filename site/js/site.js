@@ -130,5 +130,64 @@
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") document.querySelectorAll("details.dd[open]").forEach((d) => { d.open = false; }); });
   document.querySelectorAll("[data-year]").forEach((el) => { el.textContent = new Date().getFullYear(); });
   paintSaved(); wireForms(); fillLive(); fillTop();
-  window.OSS = { inventory, swatch, typeOf, toneOf, TYPE_LABEL, saved, esc, niceName };
+
+  /* ---------- realistic stone texture on a canvas (used by Design Your Space) ---------- */
+  function seeded(seed) { let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function stoneLook(l) {
+    const n = String(l.name || l.title || "").toUpperCase(), t = typeOf(l);
+    let h = 0; for (const c of n) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    if (t === "granite" && !/WHITE|ICE|SNOW|BIANCO/.test(n)) {
+      if (/BROWN|BALTIC|TAN|COFFEE|FANTASY|GOLD|SANTA CECILIA|GIALLO/.test(n)) return { seed: h, base: ["#6E5642", "#4E3B2D"], speck: 5200, speckColors: ["#2A1E16", "#A88B6A", "#D9C4A4", "#8E6E4F", "#1A1410"] };
+      if (/GREY|GRAY|STEEL|SILVER|SALT/.test(n)) return { seed: h, base: ["#8C8F92", "#6B6E72"], speck: 5200, speckColors: ["#2E3033", "#C9CBCD", "#55585C", "#E6E6E4"] };
+      return { seed: h, base: ["#26272A", "#1A1B1D"], speck: 4200, speckColors: ["#5A5C61", "#8C8E92", "#3B3D42", "#A7A096"] };
+    }
+    if (t === "granite") return { seed: h, base: ["#ECEBE7", "#D9D8D3"], speck: 4200, speckColors: ["#5E5E5E", "#9A9690", "#2E2E2E", "#B9A99A"] };
+    if (t === "onyx") return { seed: h, base: ["#E3C48E", "#C99A57"], veins: ["rgba(255,245,220,.55)", "rgba(150,95,40,.35)"], n: 18, w: 5, bands: true };
+    if (/BLACK|NERO|MIDNIGHT|LAVA|FOSSIL|ORCA|DARK|PEARL/.test(n)) return { seed: h, base: ["#2B2D30", "#1C1E20"], veins: ["rgba(225,225,230,.45)", "rgba(190,170,130,.35)"], n: 5, w: 4 };
+    if (/GREY|GRAY|STEEL|SLATE|ASH|CHARCOAL|BROOKLYN|HARBOR|NOVA|CASPER|CONCRETE/.test(n)) return { seed: h, base: ["#BFC2C4", "#9EA3A6"], veins: ["rgba(250,250,250,.55)", "rgba(80,85,90,.35)"], n: 7, w: 3 };
+    if (/BROWN|FANTASY|CREMA|BEIGE|BIEGE|TAJ|SAND|MUSK|NECTAR|CHAMPAGNE|GOLD|SEVELIA|SIMA|CREAM|IVORY|HONEY|AGRA/.test(n)) return { seed: h, base: ["#EFE6D6", "#DCCBAE"], veins: ["rgba(150,115,70,.55)", "rgba(120,100,80,.35)"], n: 6, w: 5 };
+    if (/BLUE|AQUA|BAHAMAS|NEPTUNE|WAVES|RAIN/.test(n)) return { seed: h, base: ["#DCE5EB", "#B5C6D2"], veins: ["rgba(60,80,100,.45)"], n: 7, w: 4 };
+    if (t === "printed" || h % 3 === 0) return { seed: h, base: ["#F6F3EE", "#E9E4DC"], veins: ["rgba(140,110,70,.6)", "rgba(80,80,80,.5)"], n: 5, w: 8 };
+    if (h % 3 === 1) return { seed: h, base: ["#F6F6F4", "#E7E8E6"], veins: ["rgba(95,100,105,.55)", "rgba(140,140,140,.38)"], n: 6, w: 5 };
+    return { seed: h, base: ["#EDEFF0", "#DDE1E3"], veins: ["rgba(110,118,125,.38)"], n: 14, w: 2.2 };
+  }
+  function stoneCanvas(l, W, H) {
+    const st = stoneLook(l), cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const ctx = cv.getContext("2d"), R = seeded(st.seed), k = W / 1200;
+    const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, st.base[0]); g.addColorStop(1, st.base[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    if (st.speck) {
+      // granite: soft mottling, then crystals of mixed sizes
+      ctx.save(); ctx.filter = `blur(${10 * k}px)`;
+      for (let i = 0; i < 260; i++) { ctx.fillStyle = st.speckColors[Math.floor(R() * st.speckColors.length)]; ctx.globalAlpha = .08 + R() * .12;
+        const r = (12 + R() * 40) * k; ctx.beginPath(); ctx.ellipse(R() * W, R() * H, r, r * (.5 + R() * .7), R() * 3, 0, Math.PI * 2); ctx.fill(); }
+      ctx.restore();
+      const count = st.speck * 3 * (W * H) / (1016 * 512);
+      for (let i = 0; i < count; i++) {
+        ctx.fillStyle = st.speckColors[Math.floor(R() * st.speckColors.length)];
+        const big = R() < .03; ctx.globalAlpha = .3 + R() * .6; const r = (big ? 1.4 + R() * 1.4 : .3 + R() * 1.0) * k;
+        ctx.beginPath(); ctx.ellipse(R() * W, R() * H, r, r * (.5 + R() * .7), R() * 3, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1; return cv;
+    }
+    const vein = (color, width, blur) => {
+      let x = st.bands ? -20 : R() * W * .3 - W * .1, y = R() * H;
+      const ang0 = st.bands ? (R() - .5) * .25 : -0.35 + (R() - .5) * .9;
+      ctx.save(); ctx.filter = blur ? `blur(${blur * k}px)` : "none"; ctx.strokeStyle = color; ctx.lineCap = "round";
+      let ang = ang0, w = width * k * (.5 + R());
+      ctx.beginPath(); ctx.moveTo(x, y);
+      for (let i = 0; i < 400 && x < W + 40; i++) {
+        ang += (R() - .5) * .35; ang = ang0 + (ang - ang0) * .92;
+        x += Math.cos(ang) * 9 * k; y += Math.sin(ang) * 9 * k + (R() - .5) * 3 * k;
+        ctx.lineTo(x, y);
+        if (!blur && i % 6 === 5) { ctx.lineWidth = w; ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); w = Math.max(.4, w * (.75 + R() * .5)); }
+      }
+      ctx.lineWidth = w; ctx.stroke(); ctx.restore();
+    };
+    for (let i = 0; i < st.n; i++) { const c = st.veins[i % st.veins.length]; vein(c, st.w * 2.2, 6); vein(c, st.w * .5, 0); }
+    for (let i = 0; i < st.n * 3; i++) vein(st.veins[0].replace(/[\d.]+\)$/, ".18)"), 1, 0);
+    return cv;
+  }
+
+  window.OSS = { inventory, swatch, stoneCanvas, typeOf, toneOf, TYPE_LABEL, saved, esc, niceName };
 })();
