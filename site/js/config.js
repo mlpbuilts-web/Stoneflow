@@ -5,11 +5,11 @@ window.STONEFLOW_CONFIG = {
   companyDetails: { address: "Virginia", phone: "999-999-9999", email: "outstonestudio@gmail.com" },
   currency: "USD",
   // Who sees the "things to check in the sheet" notes is set in Netlify: ADMIN_EMAILS (or the owner).
-  adminEmails: [],
+  adminEmails: ["mlpbuilts@gmail.com"],
 
   // Microsoft sign-in for staff (Azure app registration). The app ID and emails live in Netlify, not here.
   microsoft: {
-    clientId: "",                 // leave empty: the site reads it from Netlify (MS_CLIENT_ID)
+    clientId: "51eaad3c-733d-40f9-9aed-d898b557325a",                 // leave empty: the site reads it from Netlify (MS_CLIENT_ID)
     tenant: "consumers",
   },
 
